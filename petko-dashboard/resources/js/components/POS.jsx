@@ -1,25 +1,30 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import useApi from '../hooks/useApi';
 import Cart, { fmt } from './Cart';
 import Receipt from './Receipt';
+
+const CATEGORIES = ['All', 'Cat Food', 'Dog Food', 'Hygiene', 'Medical', 'Accessories', 'Treats/Snacks'];
 
 export default function POS() {
   const { data: inventory, loading } = useApi('/api/inventory');
   const [cart, setCart]             = useState([]);
   const [search, setSearch]         = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
   const [cash, setCash]             = useState('');
   const [receipt, setReceipt]       = useState(null);
   const [error, setError]           = useState('');
   const [processing, setProcessing] = useState(false);
-  const searchRef = useRef();
 
-  const filtered = useMemo(() => {
-    if (!inventory || !search.trim()) return [];
-    const q = search.toLowerCase();
-    return inventory
-      .filter(i => i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [inventory, search]);
+  const displayed = useMemo(() => {
+    if (!inventory) return [];
+    return inventory.filter(i => {
+      const matchSearch = !search.trim() ||
+        i.name.toLowerCase().includes(search.toLowerCase()) ||
+        i.brand.toLowerCase().includes(search.toLowerCase());
+      const matchCat = activeCategory === 'All' || i.category === activeCategory;
+      return matchSearch && matchCat;
+    });
+  }, [inventory, search, activeCategory]);
 
   const addToCart = (item) => {
     setCart(prev => {
@@ -30,15 +35,11 @@ export default function POS() {
       }
       return [...prev, { ...item, qty: 1, price: item.retail_price }];
     });
-    setSearch('');
-    searchRef.current?.focus();
   };
 
   const updateQty = (id, qty) => {
     if (qty < 1) { removeItem(id); return; }
-    setCart(prev => prev.map(c =>
-      c.id === id ? { ...c, qty: Math.min(qty, c.stock) } : c
-    ));
+    setCart(prev => prev.map(c => c.id === id ? { ...c, qty: Math.min(qty, c.stock) } : c));
   };
 
   const updatePrice = (id, price) =>
@@ -75,51 +76,58 @@ export default function POS() {
   };
 
   if (loading) return <div className="loading">Loading inventory...</div>;
-  if (receipt)  return <Receipt receipt={receipt} onNew={() => { setReceipt(null); searchRef.current?.focus(); }} />;
+  if (receipt)  return <Receipt receipt={receipt} onNew={() => setReceipt(null)} />;
 
   return (
     <div className="pos-layout">
-      {/* Left: product search */}
+      {/* Left: product browser */}
       <div className="pos-left">
         <div className="card" style={{ marginBottom: 0 }}>
-          <h3>🔍 Add Item</h3>
-          <div style={{ position: 'relative' }}>
-            <input
-              ref={searchRef}
-              className="pos-search"
-              type="text"
-              placeholder="Search product by name or brand..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              autoFocus
-            />
-            {filtered.length > 0 && (
-              <div className="pos-dropdown">
-                {filtered.map(item => (
-                  <div key={item.id} className="pos-dropdown-item" onClick={() => addToCart(item)}>
-                    <div>
-                      <span className="pos-item-name">{item.name}</span>
-                      <span className="pos-item-brand"> · {item.brand}</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <span style={{ color: 'var(--muted)', fontSize: '.8rem' }}>Stock: {item.stock}</span>
-                      <span className="pos-item-price">{fmt(item.retail_price)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* Search */}
+          <input
+            className="pos-search"
+            type="text"
+            placeholder="Search product..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            autoFocus
+          />
+
+          {/* Category tabs */}
+          <div className="pos-cat-tabs">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                className={`pos-cat-tab ${activeCategory === cat ? 'active' : ''}`}
+                onClick={() => setActiveCategory(cat)}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
 
-          <div style={{ marginTop: 16 }}>
-            <p style={{ fontSize: '.75rem', color: 'var(--muted)', marginBottom: 8 }}>QUICK FILTER</p>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {['Cat Food', 'Dog Food', 'Hygiene', 'Medical', 'Accessories', 'Treats/Snacks'].map(cat => (
-                <button key={cat} className="pos-cat-btn" onClick={() => setSearch(cat.split(' ')[0])}>
-                  {cat}
+          {/* Product grid */}
+          <div className="pos-product-grid">
+            {displayed.length === 0
+              ? <p style={{ color: 'var(--muted)', fontSize: '.85rem', padding: '16px 0' }}>No products found.</p>
+              : displayed.map(item => (
+                <button
+                  key={item.id}
+                  className={`pos-product-card ${item.stock === 0 ? 'out-of-stock' : ''}`}
+                  onClick={() => item.stock > 0 && addToCart(item)}
+                  disabled={item.stock === 0}
+                >
+                  <div className="pos-product-name">{item.name}</div>
+                  <div className="pos-product-brand">{item.brand}</div>
+                  <div className="pos-product-footer">
+                    <span className="pos-product-price">{fmt(item.retail_price)}</span>
+                    <span className={`pos-product-stock ${item.stock <= item.reorder ? 'low' : ''}`}>
+                      {item.stock === 0 ? 'Out' : `${item.stock} left`}
+                    </span>
+                  </div>
                 </button>
-              ))}
-            </div>
+              ))
+            }
           </div>
         </div>
       </div>

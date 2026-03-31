@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
-const COLORS = ['#6c63ff','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899','#14b8a6','#f97316'];
+const COLORS = ['#e879a0','#f43f8a','#fb7bb8','#fda4cf','#f59e0b','#10b981','#3b82f6','#a855f7'];
 const fmt  = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 0 });
 const fmtK = v => '₱' + (v / 1000).toFixed(0) + 'k';
 
@@ -155,50 +155,64 @@ export default function Analytics() {
           sub={topProducts[0] ? fmt(topProducts[0].value) + ' revenue' : '—'} color="info" />
       </div>
 
-      {/* ── Charts row 1 ── */}
+      {/* ── Charts row 1: Daily trend full width ── */}
       <div className="charts-grid" style={{ marginTop: 4 }}>
         <div className="card chart-full">
           <h3>Daily Sales Trend</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtK} />
-              <Tooltip formatter={v => fmt(v)} labelFormatter={l => month === 'all' ? l : `Day ${l}`} />
-              <Line type="monotone" dataKey="amount" stroke="#6c63ff" strokeWidth={2.5} dot={false} name="Sales" />
-            </LineChart>
-          </ResponsiveContainer>
+          <div style={{ width: '100%', height: 220 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dailyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtK} />
+                <Tooltip formatter={v => fmt(v)} labelFormatter={l => month === 'all' ? l : `Day ${l}`} />
+                <Line type="monotone" dataKey="amount" stroke="#e879a0" strokeWidth={2.5} dot={false} name="Sales" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+      </div>
 
-        <div className="card">
+      {/* ── Category + DoW: side by side ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, marginBottom: 20 }}>
+        <div className="card" style={{ marginBottom: 0 }}>
           <h3>Sales by Category</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={categoryData} dataKey="value" nameKey="name" cx="45%" cy="50%" outerRadius={80} innerRadius={40}>
-                {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-              </Pie>
-              <Tooltip formatter={v => fmt(v)} />
-              <Legend iconType="circle" iconSize={10} formatter={(v, e) => `${v} (${(e.payload.percent*100).toFixed(0)}%)`} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={categoryData} dataKey="value" nameKey="name" cx="50%" cy="45%" outerRadius={100} innerRadius={45}>
+                  {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                </Pie>
+                <Tooltip formatter={v => fmt(v)} />
+                <Legend iconType="circle" iconSize={11} formatter={(v) => {
+                  const item = categoryData.find(d => d.name === v);
+                  const total = categoryData.reduce((s, d) => s + d.value, 0);
+                  const pct = total > 0 && item ? ((item.value / total) * 100).toFixed(0) : 0;
+                  return `${v} (${pct}%)`;
+                }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        <div className="card">
+        <div className="card" style={{ marginBottom: 0 }}>
           <h3>Sales by Day of Week</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={dowData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtK} />
-              <Tooltip formatter={v => fmt(v)} />
-              <Bar dataKey="amount" name="Sales" radius={[4,4,0,0]}>
-                {dowData.map((entry, i) => {
-                  const max = Math.max(...dowData.map(d => d.amount));
-                  return <Cell key={i} fill={entry.amount === max ? '#6c63ff' : '#a5b4fc'} />;
-                })}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={dowData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#fce7f3" />
+                <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={fmtK} />
+                <Tooltip formatter={v => fmt(v)} />
+                <Bar dataKey="amount" name="Sales" radius={[6,6,0,0]} maxBarSize={60}>
+                  {dowData.map((entry, i) => {
+                    const max = Math.max(...dowData.map(d => d.amount));
+                    return <Cell key={i} fill={entry.amount === max ? '#e879a0' : '#fda4cf'} />;
+                  })}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -264,7 +278,7 @@ export default function Analytics() {
 }
 
 function KpiCard({ label, value, delta, sub, color }) {
-  const colors = { primary: '#6c63ff', success: '#10b981', warning: '#f59e0b', info: '#3b82f6' };
+  const colors = { primary: '#e879a0', success: '#10b981', warning: '#f59e0b', info: '#f43f8a' };
   return (
     <div className="stat-card" style={{ borderLeftColor: colors[color] || colors.primary }}>
       <div className="stat-label">{label}</div>

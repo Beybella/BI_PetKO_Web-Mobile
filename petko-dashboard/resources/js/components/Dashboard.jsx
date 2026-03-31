@@ -3,20 +3,28 @@ import Analytics from './Analytics';
 import LowStock from './LowStock';
 import Inventory from './Inventory';
 import POS from './POS';
+import Settings from './Settings';
 
 const TABS = [
-  { key: 'dashboard', label: 'Dashboard',  icon: '📊' },
-  { key: 'pos',       label: 'POS',         icon: '🧾' },
-  { key: 'inventory', label: 'Inventory',   icon: '📦' },
-  { key: 'lowstock',  label: 'Low Stock',   icon: '⚠️' },
+  { key: 'dashboard', label: 'Dashboard', icon: '📊' },
+  { key: 'pos',       label: 'POS',        icon: '🧾' },
+  { key: 'inventory', label: 'Inventory',  icon: '📦' },
+  { key: 'lowstock',  label: 'Low Stock',  icon: '⚠️' },
 ];
 
 export default function Dashboard() {
   const [tab, setTab]         = useState('dashboard');
   const [sideOpen, setSideOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
   const sideRef = useRef();
 
-  // close sidebar on outside click (mobile)
+  // Apply dark mode class to <html>
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+
+  // Close sidebar on outside click (mobile)
   useEffect(() => {
     const h = e => { if (sideRef.current && !sideRef.current.contains(e.target)) setSideOpen(false); };
     document.addEventListener('mousedown', h);
@@ -25,7 +33,6 @@ export default function Dashboard() {
 
   return (
     <div className="app-shell">
-      {/* ── Sidebar ── */}
       <aside className={`sidebar ${sideOpen ? 'open' : ''}`} ref={sideRef}>
         <div className="sidebar-logo">
           <span className="logo-icon">🐾</span>
@@ -43,13 +50,18 @@ export default function Dashboard() {
             </button>
           ))}
         </nav>
-        <div className="sidebar-footer">Settings</div>
+        <button
+          className={`sidebar-item ${tab === 'settings' ? 'active' : ''}`}
+          style={{ borderTop: '1px solid var(--border)', marginTop: 'auto' }}
+          onClick={() => { setTab('settings'); setSideOpen(false); }}
+        >
+          <span className="sidebar-icon">⚙️</span>
+          <span className="sidebar-label">Settings</span>
+        </button>
       </aside>
 
-      {/* overlay for mobile */}
       {sideOpen && <div className="sidebar-overlay" onClick={() => setSideOpen(false)} />}
 
-      {/* ── Main ── */}
       <div className="main-area">
         <header className="topbar">
           <button className="hamburger-btn" onClick={() => setSideOpen(o => !o)} aria-label="Menu">
@@ -68,6 +80,7 @@ export default function Dashboard() {
           {tab === 'pos'       && <POS />}
           {tab === 'inventory' && <Inventory />}
           {tab === 'lowstock'  && <LowStock />}
+          {tab === 'settings'  && <Settings darkMode={darkMode} setDarkMode={setDarkMode} />}
         </div>
       </div>
     </div>

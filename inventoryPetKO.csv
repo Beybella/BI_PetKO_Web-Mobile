@@ -1,0 +1,51 @@
+Item_ID,Category,Item_Name,Brand,Unit_Cost,Retail_Price,Stock_Level,Reorder_Level
+INV-001,Cat Food,Aozi Cat Tuna 1kg,Aozi,95,135,45,20
+INV-002,Cat Food,Princess Cat Takal 1kg,Princess,38,55,8,15
+INV-003,Dog Food,Vitality High Protein 1kg,Vitality,170,245,4,12
+INV-004,Hygiene,Litter Sand Coffee 10L,Generic,115,185,6,15
+INV-005,Medical,LC-Vit Multivitamins 120ml,LC-Vit,125,195,18,10
+INV-006,Medical,Doxycycline 100mg Tab,Generic,15,30,42,50
+INV-007,Accessories,Pet Cage Large Collapsible,Generic,3900,5500,2,2
+INV-008,Dog Food,Pedigree Puppy 1kg,Pedigree,125,180,22,15
+INV-009,Hygiene,Madre de Cacao Soap 100g,Local,30,85,45,20
+INV-010,Cat Food,Whiskas Mackerel 1kg,Whiskas,85,115,38,15
+INV-011,Accessories,Cat Scratcher Post,Generic,150,275,3,6
+INV-012,Medical,Hemobicide 100ml,Generic,185,295,5,8
+INV-013,Dog Food,Aozi Dog Beef 1kg,Aozi,95,145,50,25
+INV-014,Cat Food,Special Cat Chicken 1kg,Special Cat,115,170,12,15
+INV-015,Hygiene,Pet Wipes 80pcs,Generic,32,75,65,25
+INV-016,Medical,Papi MVP Vitamins 120ml,Papi,115,190,9,12
+INV-017,Accessories,Pet Carrier Medium,Generic,310,480,4,5
+INV-018,Dog Food,Beef Teriyaki Treats 100g,Generic,55,95,15,20
+INV-019,Medical,Nefrotec DS Tablets,Himalaya,395,580,5,5
+INV-020,Accessories,Adjustable Nylon Collar,Generic,28,85,110,30
+INV-021,Cat Food,Cuties Catz 1kg,Cuties,68,98,28,20
+INV-022,Hygiene,Pee Pads 60x60 10pcs,Generic,95,160,7,12
+INV-023,Dog Food,Smart Heart Power Pack 1kg,Smart Heart,145,225,14,12
+INV-024,Medical,Frontline Plus Spot-On,Frontline,340,495,10,8
+INV-025,Accessories,Stainless Steel Bowl M,Generic,75,145,24,12
+INV-026,Hygiene,Dry Shampoo Spray 200ml,Generic,125,235,11,8
+INV-027,Cat Food,Ciao Churu 4pcs Pack,Ciao,70,115,55,25
+INV-028,Dog Food,Top Breed Adult 1kg,Top Breed,78,115,85,35
+INV-029,Medical,Prazital Dewormer Tab,Papi,150,265,15,12
+INV-030,Accessories,Retractable Leash 5m,Generic,195,380,6,8
+INV-031,Hygiene,Anti-Tick Powder 100g,Generic,65,135,14,15
+INV-032,Cat Food,Zoi Cat 1kg,Zoi,65,100,42,25
+INV-033,Dog Food,Beef Pro Puppy 1kg,Beef Pro,115,165,12,20
+INV-034,Medical,Nutri-plus Gel 120g,Virbac,480,650,8,10
+INV-035,Hygiene,Pet Shampoo with Conditioner,Generic,110,225,15,10
+INV-036,Accessories,Dog Diaper Medium 10pcs,Generic,140,245,6,10
+INV-037,Cat Food,Power Cat Fresh Fish 1kg,Power Cat,115,175,20,15
+INV-038,Medical,Dextrose Powder 100g,Generic,35,75,30,20
+INV-039,Dog Food,Alpo Adult Beef 1.5kg,Alpo,290,385,14,10
+INV-040,Accessories,Cat Litter Scoop,Generic,25,55,20,10
+INV-041,Medical,Wormaze Dewormer 60ml,Papi,140,225,12,8
+INV-042,Hygiene,Tick and Flea Spray 250ml,Local,185,320,7,10
+INV-043,Cat Food,Monello Kitten 1kg,Monello,165,245,11,12
+INV-044,Medical,Cof-Away Syrup 60ml,Papi,135,215,8,10
+INV-045,Dog Food,Royal Canin Puppy 1kg,Royal Canin,480,650,5,8
+INV-046,Accessories,Muzzle Nylon Size 3,Generic,45,95,12,5
+INV-047,Hygiene,Catnip Spray 50ml,Generic,115,220,15,8
+INV-048,Medical,Scour-Vee Syrup 60ml,Papi,145,235,9,10
+INV-049,Dog Food,Bow Wow Meat Jerky 150g,Generic,110,195,16,10
+INV-050,Accessories,Flea Comb Fine Tooth,Generic,35,85,25,10

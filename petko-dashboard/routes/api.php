@@ -7,3 +7,5 @@ use App\Http\Controllers\SalesController;
 Route::get('/inventory', [InventoryController::class, 'index']);
 Route::get('/sales', [SalesController::class, 'index']);
 Route::get('/sales/summary', [SalesController::class, 'summary']);
+
+Route::post('/pos/transaction', [\App\Http\Controllers\PosController::class, 'store']);

@@ -1,4 +1,3 @@
-Item_ID,Category,Item_Name,Brand,Unit_Cost,Retail_Price,Stock_Level,Reorder_Level
 INV-001,Cat Food,Aozi Cat Tuna 1kg,Aozi,95,135,45,20
 INV-002,Cat Food,Princess Cat Takal 1kg,Princess,38,55,8,15
 INV-003,Dog Food,Vitality High Protein 1kg,Vitality,170,245,4,12

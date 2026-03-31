@@ -366,3 +366,30 @@ html.dark .low-stock-strip { background: #2d1a1a; border-color: #7f1d1d; }
 html.dark .pos-product-card { background: var(--card); }
 html.dark .pos-product-card:hover:not(:disabled) { background: var(--primary-light); }
 html.dark .pos-cat-tab { background: var(--card); color: var(--muted); }
+
+/* ── Restock button ── */
+.restock-btn {
+  padding: 4px 12px; background: var(--primary-light); color: var(--primary);
+  border: 1.5px solid var(--primary); border-radius: 6px; font-size: .78rem;
+  font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s;
+}
+.restock-btn:hover { background: var(--primary); color: white; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500; padding: 16px;
+}
+.modal {
+  background: var(--card); border-radius: 14px; padding: 24px;
+  width: 100%; max-width: 380px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  animation: fadeDown .15s ease;
+}
+.modal-input {
+  width: 100%; padding: 10px 14px; border: 2px solid var(--border);
+  border-radius: 8px; font-size: 1rem; outline: none;
+}
+.modal-input:focus { border-color: var(--primary); }
+html.dark .modal { background: var(--card); }

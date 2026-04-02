@@ -3,75 +3,117 @@ import Analytics from './Analytics';
 import LowStock from './LowStock';
 import Inventory from './Inventory';
 import POS from './POS';
-import Settings from './Settings';
+import DailySummary from './DailySummary';
 
 const TABS = [
-  { key: 'dashboard', label: 'Dashboard', icon: '📊' },
-  { key: 'pos',       label: 'POS',        icon: '🧾' },
-  { key: 'inventory', label: 'Inventory',  icon: '📦' },
-  { key: 'lowstock',  label: 'Low Stock',  icon: '⚠️' },
+  { key: 'dashboard', label: 'Analytics',  icon: '📊' },
+  { key: 'pos',       label: 'POS',         icon: '🧾' },
+  { key: 'inventory', label: 'Inventory',   icon: '📦' },
+  { key: 'lowstock',  label: 'Low Stock',   icon: '⚠️' },
+  { key: 'daily',     label: 'Daily',       icon: '📅' },
 ];
 
-export default function Dashboard() {
-  const [tab, setTab]         = useState('dashboard');
-  const [sideOpen, setSideOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
-  const sideRef = useRef();
+function useClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
 
-  // Apply dark mode class to <html>
+export default function Dashboard() {
+  const [tab, setTab]               = useState('dashboard');
+  const [darkMode, setDarkMode]     = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const drawerRef = useRef();
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 
-  // Close sidebar on outside click (mobile)
   useEffect(() => {
-    const h = e => { if (sideRef.current && !sideRef.current.contains(e.target)) setSideOpen(false); };
+    const h = e => {
+      if (drawerRef.current && !drawerRef.current.contains(e.target)) setMobileOpen(false);
+    };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
+  const now     = useClock();
+  const dateStr = now.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const navigate = (key) => { setTab(key); setMobileOpen(false); };
+
+  const NavItems = ({ onClose }) => (
+    <>
+      {TABS.map(t => (
+        <button
+          key={t.key}
+          className={`sidebar-item ${tab === t.key ? 'active' : ''}`}
+          onClick={() => { navigate(t.key); onClose?.(); }}
+        >
+          <span className="sidebar-icon">{t.icon}</span>
+          <span className="sidebar-label">{t.label}</span>
+        </button>
+      ))}
+    </>
+  );
+
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${sideOpen ? 'open' : ''}`} ref={sideRef}>
+
+      {/* ── Permanent sidebar (desktop) ── */}
+      <aside className="sidebar">
         <div className="sidebar-logo">
-          <span className="logo-icon">🐾</span>
-          <span className="logo-text">Pet Ko</span>
+          <span style={{ fontSize: '2.2rem' }}>🐾</span>
+          <span className="sidebar-logo-text">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></span>
         </div>
         <nav className="sidebar-nav">
-          {TABS.map(t => (
-            <button
-              key={t.key}
-              className={`sidebar-item ${tab === t.key ? 'active' : ''}`}
-              onClick={() => { setTab(t.key); setSideOpen(false); }}
-            >
-              <span className="sidebar-icon">{t.icon}</span>
-              <span className="sidebar-label">{t.label}</span>
-            </button>
-          ))}
+          <NavItems />
         </nav>
-        <button
-          className={`sidebar-item ${tab === 'settings' ? 'active' : ''}`}
-          style={{ borderTop: '1px solid var(--border)', marginTop: 'auto' }}
-          onClick={() => { setTab('settings'); setSideOpen(false); }}
-        >
-          <span className="sidebar-icon">⚙️</span>
-          <span className="sidebar-label">Settings</span>
-        </button>
+        <div className="sidebar-footer">PetKO Business Intelligence</div>
       </aside>
 
-      {sideOpen && <div className="sidebar-overlay" onClick={() => setSideOpen(false)} />}
+      {/* ── Mobile overlay + drawer ── */}
+      {mobileOpen && <div className="drawer-overlay" onClick={() => setMobileOpen(false)} />}
+      <aside className={`sidebar sidebar-mobile ${mobileOpen ? 'open' : ''}`} ref={drawerRef}>
+        <div className="sidebar-logo">
+          <span style={{ fontSize: '2.2rem' }}>🐾</span>
+          <span className="sidebar-logo-text">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></span>
+          <button className="drawer-close" onClick={() => setMobileOpen(false)}>✕</button>
+        </div>
+        <nav className="sidebar-nav">
+          <NavItems onClose={() => setMobileOpen(false)} />
+        </nav>
+        <div className="sidebar-footer">PetKO Business Intelligence</div>
+      </aside>
 
+      {/* ── Main area ── */}
       <div className="main-area">
         <header className="topbar">
-          <button className="hamburger-btn" onClick={() => setSideOpen(o => !o)} aria-label="Menu">
-            <span className="ham-line" />
-            <span className="ham-line" />
-            <span className="ham-line" />
-          </button>
-          <div className="topbar-title">
-            <h1>Sales Dashboard</h1>
-            <p className="topbar-sub">PetKO Business Intelligence</p>
+          <div className="topbar-left">
+            <button className="hamburger-btn" onClick={() => setMobileOpen(o => !o)} aria-label="Menu">
+              <span className="ham-line" />
+              <span className="ham-line" />
+              <span className="ham-line" />
+            </button>
+            <div>
+              <h1 className="topbar-title">Pet<span className="topbar-title-accent">KO</span> Dashboard</h1>
+              <p className="topbar-sub">Everything Your Pets Need, All in One Place.</p>
+            </div>
+          </div>
+          <div className="topbar-right">
+            <span className="topbar-date">🕐 {dateStr} · {timeStr}</span>
+            {/* Dark mode toggle */}
+            <button
+              className={`darkmode-toggle ${darkMode ? 'on' : ''}`}
+              onClick={() => setDarkMode(d => !d)}
+              title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
           </div>
         </header>
 
@@ -80,9 +122,10 @@ export default function Dashboard() {
           {tab === 'pos'       && <POS />}
           {tab === 'inventory' && <Inventory />}
           {tab === 'lowstock'  && <LowStock />}
-          {tab === 'settings'  && <Settings darkMode={darkMode} setDarkMode={setDarkMode} />}
+          {tab === 'daily'     && <DailySummary />}
         </div>
       </div>
+
     </div>
   );
 }

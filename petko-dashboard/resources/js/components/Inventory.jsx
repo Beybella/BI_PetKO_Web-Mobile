@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 
+const CATEGORIES = ['Cat Food','Dog Food','Hygiene','Medical','Accessories','Treats/Snacks'];
+const EMPTY_FORM = { name:'', category:'Cat Food', brand:'', unit_cost:'', retail_price:'', stock:'', reorder:'' };
+
 export default function Inventory() {
   const [data, setData]               = useState(null);
   const [loading, setLoading]         = useState(true);
@@ -9,19 +12,19 @@ export default function Inventory() {
   const [restockQty, setRestockQty]   = useState('');
   const [restockMsg, setRestockMsg]   = useState('');
   const [saving, setSaving]           = useState(false);
+  const [showAdd, setShowAdd]         = useState(false);
+  const [editItem, setEditItem]       = useState(null);
+  const [form, setForm]               = useState(EMPTY_FORM);
+  const [addError, setAddError]       = useState('');
+  const [addSaving, setAddSaving]     = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => {
-    fetch('/api/inventory')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); });
+    fetch('/api/inventory').then(r => r.json()).then(d => { setData(d); setLoading(false); });
   }, []);
 
-  const categories = useMemo(() => {
-    if (!data) return [];
-    return [...new Set(data.map(i => i.category))].sort();
-  }, [data]);
-
-  const filtered = useMemo(() => {
+  const categories = useMemo(() => data ? [...new Set(data.map(i => i.category))].sort() : [], [data]);
+  const filtered   = useMemo(() => {
     if (!data) return [];
     const q = search.toLowerCase();
     return data.filter(i =>
@@ -30,10 +33,13 @@ export default function Inventory() {
     );
   }, [data, search, category]);
 
-  const openRestock = (item) => {
-    setRestockItem(item);
-    setRestockQty('');
-    setRestockMsg('');
+  const openRestock = (item) => { setRestockItem(item); setRestockQty(''); setRestockMsg(''); };
+  const openEdit    = (item) => {
+    setEditItem(item);
+    setForm({ name: item.name, category: item.category, brand: item.brand,
+      unit_cost: item.unit_cost, retail_price: item.retail_price,
+      stock: item.stock, reorder: item.reorder });
+    setAddError('');
   };
 
   const submitRestock = async () => {
@@ -42,23 +48,59 @@ export default function Inventory() {
     setSaving(true);
     try {
       const res  = await fetch(`/api/inventory/${restockItem.id}/restock`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ qty }),
       });
       const json = await res.json();
       if (!res.ok) { setRestockMsg(json.error || 'Failed.'); return; }
-      setData(prev => prev.map(i =>
-        i.id === restockItem.id ? { ...i, stock: json.new_stock } : i
-      ));
+      setData(prev => prev.map(i => i.id === restockItem.id ? { ...i, stock: json.new_stock } : i));
       setRestockItem(prev => ({ ...prev, stock: json.new_stock }));
       setRestockMsg(`Stock updated to ${json.new_stock}`);
       setRestockQty('');
-    } catch {
-      setRestockMsg('Network error.');
-    } finally {
-      setSaving(false);
+    } catch { setRestockMsg('Network error.'); } finally { setSaving(false); }
+  };
+
+  const submitAdd = async () => {
+    if (!form.name || !form.brand || !form.unit_cost || !form.retail_price || form.stock === '' || form.reorder === '') {
+      setAddError('Please fill in all fields.'); return;
     }
+    setAddError(''); setAddSaving(true);
+    try {
+      const res  = await fetch('/api/inventory', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const json = await res.json();
+      if (!res.ok) { setAddError(json.message || 'Failed.'); return; }
+      setData(prev => [...prev, json]);
+      setShowAdd(false); setForm(EMPTY_FORM);
+    } catch { setAddError('Network error.'); } finally { setAddSaving(false); }
+  };
+
+  const submitEdit = async () => {
+    if (!form.name || !form.brand || form.unit_cost === '' || form.retail_price === '' || form.stock === '' || form.reorder === '') {
+      setAddError('Please fill in all fields.'); return;
+    }
+    setAddError(''); setAddSaving(true);
+    try {
+      const res = await fetch(`/api/inventory/${editItem.id}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) { setAddError('Failed to update.'); return; }
+      setData(prev => prev.map(i => i.id === editItem.id ? { ...i, ...form,
+        unit_cost: parseFloat(form.unit_cost), retail_price: parseFloat(form.retail_price),
+        stock: parseInt(form.stock), reorder: parseInt(form.reorder) } : i));
+      setEditItem(null);
+    } catch { setAddError('Network error.'); } finally { setAddSaving(false); }
+  };
+
+  const submitDelete = async (id) => {
+    try {
+      await fetch(`/api/inventory/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } });
+      setData(prev => prev.filter(i => i.id !== id));
+      setDeleteConfirm(null);
+    } catch { alert('Delete failed.'); }
   };
 
   if (loading) return <div className="loading">Loading inventory...</div>;
@@ -70,117 +112,137 @@ export default function Inventory() {
     return <span className="badge ok">OK</span>;
   };
 
+  const FormModal = ({ title, onSubmit, onClose }) => (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal modal-wide" onClick={e => e.stopPropagation()}>
+        <h3 style={{ marginBottom: 4 }}>{title}</h3>
+        <p style={{ color:'var(--muted)', fontSize:'.82rem', marginBottom:18 }}>Fill in the product details.</p>
+        <div className="add-form-grid">
+          {[
+            { key:'name',         label:'Item Name *',       type:'text',   placeholder:'e.g. Royal Canin Adult 2kg' },
+            { key:'brand',        label:'Brand *',           type:'text',   placeholder:'e.g. Royal Canin' },
+            { key:'unit_cost',    label:'Unit Cost (₱) *',   type:'number', placeholder:'0.00' },
+            { key:'retail_price', label:'Retail Price (₱) *',type:'number', placeholder:'0.00' },
+            { key:'stock',        label:'Stock Level *',     type:'number', placeholder:'0' },
+            { key:'reorder',      label:'Reorder Level *',   type:'number', placeholder:'0' },
+          ].map(f => (
+            <div key={f.key} className="add-form-field">
+              <label>{f.label}</label>
+              <input className="modal-input" type={f.type} placeholder={f.placeholder}
+                value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} />
+            </div>
+          ))}
+          <div className="add-form-field">
+            <label>Category *</label>
+            <select className="modal-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+        {addError && <p style={{ color:'var(--primary)', fontSize:'.82rem', marginTop:8 }}>⚠️ {addError}</p>}
+        <div style={{ display:'flex', gap:10, marginTop:20 }}>
+          <button className="checkout-btn" style={{ flex:1 }} onClick={onSubmit} disabled={addSaving}>
+            {addSaving ? 'Saving...' : '✓ Save'}
+          </button>
+          <button className="inv-close-btn" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-label">Total SKUs</div>
-          <div className="stat-value">{data.length}</div>
-        </div>
-        <div className="stat-card success">
-          <div className="stat-label">Total Units</div>
-          <div className="stat-value">{data.reduce((s, i) => s + i.stock, 0).toLocaleString()}</div>
-        </div>
-        <div className="stat-card warning">
-          <div className="stat-label">Cost Value</div>
-          <div className="stat-value">₱{data.reduce((s, i) => s + i.unit_cost * i.stock, 0).toLocaleString()}</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Retail Value</div>
-          <div className="stat-value">₱{data.reduce((s, i) => s + i.retail_price * i.stock, 0).toLocaleString()}</div>
-        </div>
+        <div className="stat-card blue"><div className="stat-label">Total SKUs</div><div className="stat-value">{data.length}</div></div>
+        <div className="stat-card green"><div className="stat-label">Total Units</div><div className="stat-value">{data.reduce((s,i)=>s+i.stock,0).toLocaleString()}</div></div>
+        <div className="stat-card yellow"><div className="stat-label">Cost Value</div><div className="stat-value">₱{data.reduce((s,i)=>s+i.unit_cost*i.stock,0).toLocaleString()}</div></div>
+        <div className="stat-card red"><div className="stat-label">Retail Value</div><div className="stat-value">₱{data.reduce((s,i)=>s+i.retail_price*i.stock,0).toLocaleString()}</div></div>
       </div>
 
       <div className="card">
-        <div className="search-bar">
-          <input
-            type="text" placeholder="Search by name or brand..."
-            value={search} onChange={e => setSearch(e.target.value)}
-          />
-          <select value={category} onChange={e => setCategory(e.target.value)}>
-            <option value="">All Categories</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+        <div className="inv-toolbar">
+          <div className="search-bar" style={{ flex:1, marginBottom:0 }}>
+            <input type="text" placeholder="🔍  Search by name or brand..." value={search} onChange={e => setSearch(e.target.value)} />
+            <select value={category} onChange={e => setCategory(e.target.value)}>
+              <option value="">All Categories</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <button className="add-item-btn" onClick={() => { setShowAdd(true); setForm(EMPTY_FORM); setAddError(''); }}>+ Add Item</button>
         </div>
 
-        <div className="table-wrap">
+        <div className="table-wrap" style={{ marginTop:16 }}>
           <table>
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Category</th>
-                <th>Item Name</th>
-                <th>Brand</th>
-                <th>Cost</th>
-                <th>Retail</th>
-                <th>Stock</th>
-                <th>Reorder</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
+              <tr><th>ID</th><th>Category</th><th>Item Name</th><th>Brand</th><th>Cost</th><th>Retail</th><th>Stock</th><th>Reorder</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody>
               {filtered.map(i => (
                 <tr key={i.id}>
-                  <td style={{ color: 'var(--muted)', fontSize: '.78rem' }}>{i.id}</td>
+                  <td style={{ color:'var(--muted)', fontSize:'.78rem' }}>{i.id}</td>
                   <td>{i.category}</td>
-                  <td style={{ fontWeight: 500 }}>{i.name}</td>
+                  <td style={{ fontWeight:500 }}>{i.name}</td>
                   <td>{i.brand}</td>
                   <td>₱{i.unit_cost.toLocaleString()}</td>
                   <td>₱{i.retail_price.toLocaleString()}</td>
-                  <td style={{ fontWeight: 700 }}>{i.stock}</td>
+                  <td style={{ fontWeight:700 }}>{i.stock}</td>
                   <td>{i.reorder}</td>
                   <td>{badge(i.stock, i.reorder)}</td>
                   <td>
-                    <button className="restock-btn" onClick={() => openRestock(i)}>
-                      + Add Stock
-                    </button>
+                    <div style={{ display:'flex', gap:6 }}>
+                      <button className="restock-btn" onClick={() => openRestock(i)}>+ Stock</button>
+                      <button className="edit-btn" onClick={() => openEdit(i)}>✏️</button>
+                      <button className="delete-btn" onClick={() => setDeleteConfirm(i)}>🗑️</button>
+                    </div>
                   </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={10} style={{ textAlign: 'center', color: 'var(--muted)', padding: 24 }}>
-                    No items found.
-                  </td>
-                </tr>
+                <tr><td colSpan={10} style={{ textAlign:'center', color:'var(--muted)', padding:24 }}>No items found.</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
 
+      {/* Restock Modal */}
       {restockItem && (
         <div className="modal-overlay" onClick={() => setRestockItem(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginBottom: 4 }}>Add Stock</h3>
-            <p style={{ color: 'var(--muted)', fontSize: '.85rem', marginBottom: 16 }}>
-              {restockItem.name}<br />
-              Current stock: <strong style={{ color: 'var(--text)' }}>{restockItem.stock}</strong>
+            <h3 style={{ marginBottom:4 }}>Add Stock</h3>
+            <p style={{ color:'var(--muted)', fontSize:'.85rem', marginBottom:16 }}>
+              {restockItem.name}<br/>Current stock: <strong>{restockItem.stock}</strong>
             </p>
-            <label style={{ fontSize: '.82rem', fontWeight: 600, display: 'block', marginBottom: 6 }}>
-              Quantity to Add
-            </label>
-            <input
-              className="modal-input"
-              type="number" min="1" placeholder="e.g. 10"
-              value={restockQty}
-              onChange={e => setRestockQty(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && submitRestock()}
-              autoFocus
-            />
-            {restockMsg && (
-              <p style={{ fontSize: '.82rem', marginTop: 8, color: 'var(--success)' }}>
-                ✓ {restockMsg}
-              </p>
-            )}
-            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button className="checkout-btn" style={{ flex: 1 }} onClick={submitRestock} disabled={saving}>
-                {saving ? 'Saving...' : 'Confirm'}
-              </button>
-              <button className="clear-btn" style={{ flex: 1, marginTop: 0 }} onClick={() => setRestockItem(null)}>
-                Close
-              </button>
+            <label style={{ fontSize:'.82rem', fontWeight:600, display:'block', marginBottom:6 }}>Quantity to Add</label>
+            <input className="modal-input" type="number" min="1" placeholder="e.g. 10"
+              value={restockQty} onChange={e => setRestockQty(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submitRestock()} autoFocus />
+            {restockMsg && <p style={{ fontSize:'.82rem', marginTop:8, color:'var(--green)' }}>✓ {restockMsg}</p>}
+            <div style={{ display:'flex', gap:10, marginTop:16 }}>
+              <button className="checkout-btn" style={{ flex:1 }} onClick={submitRestock} disabled={saving}>{saving ? 'Saving...' : 'Confirm'}</button>
+              <button className="inv-close-btn" onClick={() => setRestockItem(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Modal */}
+      {showAdd && <FormModal title="➕ Add New Item" onSubmit={submitAdd} onClose={() => setShowAdd(false)} />}
+
+      {/* Edit Modal */}
+      {editItem && <FormModal title={`✏️ Edit — ${editItem.name}`} onSubmit={submitEdit} onClose={() => setEditItem(null)} />}
+
+      {/* Delete Confirm */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom:8 }}>🗑️ Delete Item</h3>
+            <p style={{ color:'var(--muted)', fontSize:'.88rem', marginBottom:20 }}>
+              Are you sure you want to remove <strong>{deleteConfirm.name}</strong> from inventory? This cannot be undone.
+            </p>
+            <div style={{ display:'flex', gap:10 }}>
+              <button className="checkout-btn" style={{ flex:1, background:'var(--primary)' }} onClick={() => submitDelete(deleteConfirm.id)}>Yes, Delete</button>
+              <button className="inv-close-btn" onClick={() => setDeleteConfirm(null)}>Cancel</button>
             </div>
           </div>
         </div>
@@ -188,3 +250,4 @@ export default function Inventory() {
     </>
   );
 }
+

@@ -2,17 +2,33 @@ import React from 'react';
 
 export const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
-export default function Cart({ cart, cash, setCash, error, processing, onUpdateQty, onUpdatePrice, onRemove, onClear, onCheckout }) {
-  const total   = cart.reduce((s, c) => s + c.qty * c.price, 0);
-  const cashNum = parseFloat(cash) || 0;
-  const change  = cashNum - total;
+export default function Cart({ cart, cartCount, cash, setCash, discount, setDiscount, error, processing, onUpdateQty, onUpdatePrice, onRemove, onClear, onCheckout }) {
+  const subtotal  = cart.reduce((s, c) => s + c.qty * c.price, 0);
+  const disc      = parseFloat(discount) || 0;
+  const total     = Math.max(0, subtotal - disc);
+  const cashNum   = parseFloat(cash) || 0;
+  const change    = cashNum - total;
 
   return (
-    <div className="card" style={{ marginBottom: 0 }}>
-      <h3>🛒 Cart {cart.length > 0 && <span className="cart-count">{cart.length}</span>}</h3>
+    <div className="card pos-cart-card" style={{ marginBottom: 0 }}>
+      {/* Cart header */}
+      <div className="pos-cart-header">
+        <span className="pos-cart-title">🛒 Cart</span>
+        {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+        {cart.length > 0 && (
+          <button className="clear-btn-sm" onClick={onClear}>Clear all</button>
+        )}
+      </div>
 
+      {/* Items */}
       {cart.length === 0
-        ? <p style={{ color: 'var(--muted)', fontSize: '.9rem', padding: '20px 0' }}>No items added yet.</p>
+        ? (
+          <div className="cart-empty">
+            <div style={{ fontSize: '2.5rem' }}>🛒</div>
+            <p>Cart is empty</p>
+            <p style={{ fontSize: '.78rem' }}>Click a product to add it</p>
+          </div>
+        )
         : (
           <div className="cart-items">
             {cart.map(item => (
@@ -30,7 +46,7 @@ export default function Cart({ cart, cash, setCash, error, processing, onUpdateQ
                     onChange={e => onUpdateQty(item.id, parseInt(e.target.value) || 1)}
                   />
                   <button className="qty-btn" onClick={() => onUpdateQty(item.id, item.qty + 1)}>+</button>
-                  <span style={{ margin: '0 6px', color: 'var(--muted)', fontSize: '.8rem' }}>×</span>
+                  <span style={{ margin: '0 4px', color: 'var(--muted)', fontSize: '.8rem' }}>×</span>
                   <input
                     className="price-input"
                     type="number" min="0" step="0.01"
@@ -38,7 +54,7 @@ export default function Cart({ cart, cash, setCash, error, processing, onUpdateQ
                     onChange={e => onUpdatePrice(item.id, e.target.value)}
                   />
                   <span className="cart-line-total">{fmt(item.qty * item.price)}</span>
-                  <button className="remove-btn" onClick={() => onRemove(item.id)}>✕</button>
+                  <button className="remove-btn" onClick={() => onRemove(item.id)} title="Remove">✕</button>
                 </div>
               </div>
             ))}
@@ -46,17 +62,39 @@ export default function Cart({ cart, cash, setCash, error, processing, onUpdateQ
         )
       }
 
+      {/* Payment section */}
       <div className="payment-section">
         <div className="payment-row">
           <span>Subtotal</span>
-          <span>{fmt(total)}</span>
+          <span>{fmt(subtotal)}</span>
         </div>
+
+        {/* Discount */}
+        <div className="payment-row">
+          <label style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+            🏷️ Discount
+          </label>
+          <input
+            className="cash-input"
+            type="number" min="0" step="1" placeholder="0.00"
+            value={discount}
+            onChange={e => setDiscount(e.target.value)}
+          />
+        </div>
+        {disc > 0 && (
+          <div className="payment-row" style={{ color: 'var(--green)', fontSize: '.85rem' }}>
+            <span>Discount Applied</span>
+            <span>− {fmt(disc)}</span>
+          </div>
+        )}
+
         <div className="payment-row total-row">
           <span>TOTAL</span>
-          <span>{fmt(total)}</span>
+          <span style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>{fmt(total)}</span>
         </div>
-        <div className="payment-row" style={{ marginTop: 12 }}>
-          <label style={{ fontWeight: 600 }}>Cash Received</label>
+
+        <div className="payment-row" style={{ marginTop: 10 }}>
+          <label style={{ fontWeight: 600 }}>💵 Cash Received</label>
           <input
             className="cash-input"
             type="number" min="0" step="1" placeholder="0.00"
@@ -64,23 +102,29 @@ export default function Cart({ cart, cash, setCash, error, processing, onUpdateQ
             onChange={e => setCash(e.target.value)}
           />
         </div>
-        {cashNum >= total && total > 0 && (
+
+        {cashNum > 0 && cashNum >= total && total > 0 && (
           <div className="payment-row change-row">
             <span>Change</span>
-            <span style={{ color: 'var(--success)', fontWeight: 700 }}>{fmt(change)}</span>
+            <span style={{ color: 'var(--green)', fontWeight: 800, fontSize: '1.05rem' }}>{fmt(change)}</span>
           </div>
         )}
-        {error && <p className="pos-error">{error}</p>}
+        {cashNum > 0 && cashNum < total && total > 0 && (
+          <div className="payment-row" style={{ color: 'var(--primary)', fontSize: '.85rem' }}>
+            <span>Still needed</span>
+            <span style={{ fontWeight: 700 }}>{fmt(total - cashNum)}</span>
+          </div>
+        )}
+
+        {error && <p className="pos-error">⚠️ {error}</p>}
+
         <button
           className="checkout-btn"
           onClick={onCheckout}
           disabled={!cart.length || processing}
         >
-          {processing ? 'Processing...' : `Checkout ${cart.length > 0 ? fmt(total) : ''}`}
+          {processing ? '⏳ Processing...' : `✓ Checkout  ${cart.length > 0 ? fmt(total) : ''}`}
         </button>
-        {cart.length > 0 && (
-          <button className="clear-btn" onClick={onClear}>Clear Cart</button>
-        )}
       </div>
     </div>
   );

@@ -20,6 +20,8 @@ class PosController extends Controller
         $items = $request->input('items');
         $total = array_sum(array_map(fn($i) => $i['qty'] * $i['price'], $items));
         $cash  = (float) $request->input('cash_tendered');
+        $disc  = (float) $request->input('discount', 0);
+        $total = max(0, $total - $disc);
 
         if ($cash < $total) {
             return response()->json(['error' => 'Insufficient cash tendered.'], 422);
@@ -27,19 +29,16 @@ class PosController extends Controller
 
         $change = $cash - $total;
         $date   = now()->format('Y-m-d');
+        $txId   = 'TXN-' . now()->format('YmdHis');
 
-        // Append each sold item to petKO.csv
+        // Append each sold item as a new line in petKO.csv
         $csvPath = storage_path('app/petKO.csv');
-        $lines = [];
+        $fp = fopen($csvPath, 'a');
         foreach ($items as $item) {
-            $lineTotal = $item['qty'] * $item['price'];
-            $lines[] = implode(',', [
-                $date,
-                '"' . str_replace('"', '""', $item['name']) . '"',
-                $lineTotal,
-            ]);
+            $lineTotal = round($item['qty'] * $item['price'], 2);
+            fputcsv($fp, [$date, $item['name'], $lineTotal]);
         }
-        file_put_contents($csvPath, "\n" . implode("\n", $lines), FILE_APPEND);
+        fclose($fp);
 
         // Update inventory stock levels
         $invPath  = storage_path('app/inventoryPetKO.csv');
@@ -48,7 +47,6 @@ class PosController extends Controller
         $nameIdx  = array_search('Item_Name',   $headers);
         $stockIdx = array_search('Stock_Level', $headers);
 
-        // Build a lookup: lowercase name => row index (skip header at index 0)
         $nameMap = [];
         for ($i = 1; $i < count($rows); $i++) {
             if (isset($rows[$i][$nameIdx])) {
@@ -64,18 +62,19 @@ class PosController extends Controller
             }
         }
 
-        // Write updated inventory back
         $fp = fopen($invPath, 'w');
         foreach ($rows as $row) { fputcsv($fp, $row); }
         fclose($fp);
 
         return response()->json([
-            'success'       => true,
-            'total'         => round($total, 2),
-            'cash_tendered' => round($cash, 2),
-            'change'        => round($change, 2),
-            'date'          => $date,
-            'items'         => $items,
+            'success'        => true,
+            'transaction_id' => $txId,
+            'total'          => round($total, 2),
+            'cash_tendered'  => round($cash, 2),
+            'change'         => round($change, 2),
+            'discount'       => round($disc, 2),
+            'date'           => now()->format('Y-m-d H:i:s'),
+            'items'          => $items,
         ]);
     }
 }

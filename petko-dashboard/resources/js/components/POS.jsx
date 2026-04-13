@@ -14,7 +14,7 @@ export default function POS() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [cash, setCash]             = useState('');
   const [discount, setDiscount]     = useState('');
-  const [receipt, setReceipt]       = useState(null);
+  const [receipt, setReceipt]       = useState(null);2
   const [error, setError]           = useState('');
   const [processing, setProcessing] = useState(false);
 

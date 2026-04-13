@@ -81,18 +81,18 @@ export default function Receipt({ receipt, onNew }) {
           <hr className="receipt-divider" />
 
           <div className="receipt-totals">
-            <div className="receipt-row"><span>Subtotal</span><span>{fmt(subtotal)}</span></div>
+            <div className="receipt-row"><span>Subtotal: </span><span>{fmt(subtotal)}</span></div>
             {disc > 0 && (
               <div className="receipt-row" style={{ color: 'var(--green)' }}>
-                <span>Discount</span><span>− {fmt(disc)}</span>
+                <span>Discount: </span><span>− {fmt(disc)}</span>
               </div>
             )}
             <div className="receipt-row receipt-total-row">
-              <span>TOTAL</span><strong style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>{fmt(receipt.total)}</strong>
+              <span>TOTAL: </span><strong style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>{fmt(receipt.total)}</strong>
             </div>
-            <div className="receipt-row"><span>Cash Received</span><span>{fmt(receipt.cash_tendered)}</span></div>
+            <div className="receipt-row"><span>Cash Received: </span><span>{fmt(receipt.cash_tendered)}</span></div>
             <div className="receipt-row" style={{ color: 'var(--green)', fontWeight: 700 }}>
-              <span>Change</span><strong>{fmt(receipt.change)}</strong>
+              <span>Change: </span><strong>{fmt(receipt.change)}</strong>
             </div>
           </div>
 

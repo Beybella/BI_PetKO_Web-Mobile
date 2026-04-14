@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { IconCalendar, IconCheck, IconTrophy, IconAnalytics, IconCart, IconBox, IconWarning } from './IconsAll';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
@@ -51,22 +52,22 @@ export default function DailySummary() {
         <div className="loading">Loading today's summary...</div>
       ) : (
         <>
-          <div className="ds-date-label">📅 Today — {summary.date}</div>
+          <div className="ds-date-label"><IconCalendar size={18} style={{marginRight:6}} /> Today — {summary.date}</div>
           <div className="stats-grid">
             <div className="stat-card green">
-              <div className="kpi-icon">💰</div>
+              <div className="kpi-icon"><IconAnalytics size={24} /></div>
               <div className="stat-label">Today's Sales</div>
               <div className="stat-value">{fmt(summary.total_sales)}</div>
               <div className="stat-sub">{summary.transactions} transaction{summary.transactions !== 1 ? 's' : ''}</div>
             </div>
             <div className="stat-card red">
-              <div className="kpi-icon">📤</div>
+              <div className="kpi-icon"><IconBox size={24} /></div>
               <div className="stat-label">Today's Expenses</div>
               <div className="stat-value">{fmt(summary.total_expenses)}</div>
               <div className="stat-sub">Logged today</div>
             </div>
             <div className="stat-card blue">
-              <div className="kpi-icon">📈</div>
+              <div className="kpi-icon"><IconAnalytics size={24} /></div>
               <div className="stat-label">Net Income</div>
               <div className="stat-value" style={{ color: summary.net >= 0 ? 'var(--green)' : 'var(--primary)' }}>
                 {fmt(summary.net)}
@@ -74,7 +75,7 @@ export default function DailySummary() {
               <div className="stat-sub">Sales minus expenses</div>
             </div>
             <div className="stat-card yellow">
-              <div className="kpi-icon">🏆</div>
+              <div className="kpi-icon"><IconTrophy size={24} /></div>
               <div className="stat-label">Top Item</div>
               <div className="stat-value" style={{ fontSize: '1rem' }}>{summary.top_item || '—'}</div>
               <div className="stat-sub">{summary.top_item ? fmt(summary.top_item_amt) + ' revenue' : 'No sales yet'}</div>
@@ -86,7 +87,7 @@ export default function DailySummary() {
             {/* Sales list */}
             <div className="card" style={{ marginBottom: 0 }}>
               <div className="chart-card-header">
-                <div className="chart-card-title">🧾 Today's Sales</div>
+                <div className="chart-card-title"><IconCart size={18} style={{marginRight:6}} /> Today's Sales</div>
                 <span className="chart-total-badge">{fmt(summary.total_sales)}</span>
               </div>
               {summary.sales.length === 0
@@ -112,7 +113,7 @@ export default function DailySummary() {
             {/* Expenses list */}
             <div className="card" style={{ marginBottom: 0 }}>
               <div className="chart-card-header">
-                <div className="chart-card-title">📤 Today's Expenses</div>
+                <div className="chart-card-title"><IconBox size={18} style={{marginRight:6}} /> Today's Expenses</div>
                 <span className="chart-total-badge">{fmt(summary.total_expenses)}</span>
               </div>
               {summary.expenses.length === 0
@@ -140,7 +141,7 @@ export default function DailySummary() {
 
       {/* ── Log Expense Form ── */}
       <div className="card" style={{ marginTop: 20 }}>
-        <div className="chart-card-title" style={{ marginBottom: 16 }}>➕ Log an Expense</div>
+        <div className="chart-card-title" style={{ marginBottom: 16 }}><IconCheck size={18} style={{marginRight:6}} /> Log an Expense</div>
         <div className="expense-form">
           <div className="add-form-field">
             <label>Category</label>
@@ -166,8 +167,8 @@ export default function DailySummary() {
             </button>
           </div>
         </div>
-        {msg   && <p style={{ color:'var(--green)',   fontSize:'.85rem', marginTop:10, fontWeight:600 }}>✓ {msg}</p>}
-        {error && <p style={{ color:'var(--primary)', fontSize:'.85rem', marginTop:10 }}>⚠️ {error}</p>}
+        {msg   && <p style={{ color:'var(--green)',   fontSize:'.85rem', marginTop:10, fontWeight:600 }}><IconCheck size={14} style={{marginRight:4}} />{msg}</p>}
+        {error && <p style={{ color:'var(--primary)', fontSize:'.85rem', marginTop:10 }}><IconWarning size={14} style={{marginRight:4}} />{error}</p>}
       </div>
     </div>
   );

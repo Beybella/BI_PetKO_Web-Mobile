@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { IconAnalytics, IconWarning, IconCheck } from './IconsAll';
 
 export default function Login() {
   const { login }       = useAuth();
@@ -24,7 +25,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <span style={{ fontSize: '3rem' }}>🐾</span>
+          <span style={{ fontSize: '3rem' }}><IconAnalytics size={48} /></span>
           <h1 className="login-title">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></h1>
           <p className="login-sub">Everything Your Pets Need, All in One Place.</p>
         </div>
@@ -53,10 +54,10 @@ export default function Login() {
             />
           </div>
 
-          {error && <p className="login-error">⚠️ {error}</p>}
+          {error && <p className="login-error"><IconWarning size={16} style={{marginRight:4}} /> {error}</p>}
 
           <button className="checkout-btn" type="submit" disabled={loading}>
-            {loading ? 'Signing in...' : '🔑 Sign In'}
+            {loading ? 'Signing in...' : (<><IconCheck size={16} style={{marginRight:4}} />Sign In</>)}
           </button>
         </form>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { IconAnalytics, IconCart, IconBox, IconAlert, IconCalendar, IconUser, IconClose, IconSun, IconMoon } from './IconsAll';
 import { useAuth } from '../context/AuthContext';
 import Analytics from './Analytics';
 import LowStock from './LowStock';
@@ -8,12 +9,12 @@ import DailySummary from './DailySummary';
 import UserManagement from './UserManagement';
 
 const ALL_TABS = [
-  { key: 'dashboard',   label: 'Analytics',   icon: '📊', roles: ['admin'] },
-  { key: 'pos',         label: 'POS',          icon: '🧾', roles: ['admin','staff'] },
-  { key: 'inventory',   label: 'Inventory',    icon: '📦', roles: ['admin','staff'] },
-  { key: 'lowstock',    label: 'Low Stock',    icon: '⚠️', roles: ['admin','staff'] },
-  { key: 'daily',       label: 'Daily',        icon: '📅', roles: ['admin'] },
-  { key: 'users',       label: 'Users',        icon: '👥', roles: ['admin'] },
+  { key: 'dashboard',   label: 'Analytics',   icon: <IconAnalytics style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
+  { key: 'pos',         label: 'POS',          icon: <IconCart style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
+  { key: 'inventory',   label: 'Inventory',    icon: <IconBox style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
+  { key: 'lowstock',    label: 'Low Stock',    icon: <IconAlert style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
+  { key: 'daily',       label: 'Daily',        icon: <IconCalendar style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
+  { key: 'users',       label: 'Users',        icon: <IconUser style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
 ];
 
 function useClock() {
@@ -91,7 +92,7 @@ export default function Dashboard() {
       {/* Permanent sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <span style={{ fontSize: '2.2rem' }}>🐾</span>
+          <span style={{ fontSize: '2.2rem' }}><IconCart size={28} /></span>
           <span className="sidebar-logo-text">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></span>
         </div>
         <nav className="sidebar-nav"><NavItems /></nav>
@@ -106,9 +107,9 @@ export default function Dashboard() {
       {mobileOpen && <div className="drawer-overlay" onClick={() => setMobileOpen(false)} />}
       <aside className={`sidebar sidebar-mobile ${mobileOpen ? 'open' : ''}`} ref={drawerRef}>
         <div className="sidebar-logo">
-          <span style={{ fontSize: '2.2rem' }}>🐾</span>
+          <span style={{ fontSize: '2.2rem' }}><IconCart size={28} /></span>
           <span className="sidebar-logo-text">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></span>
-          <button className="drawer-close" onClick={() => setMobileOpen(false)}>✕</button>
+          <button className="drawer-close" onClick={() => setMobileOpen(false)}><IconClose /></button>
         </div>
         <nav className="sidebar-nav"><NavItems onClose={() => setMobileOpen(false)} /></nav>
         <div className="sidebar-user">
@@ -131,10 +132,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="topbar-right">
-            <span className="topbar-date">🕐 {dateStr} · {timeStr}</span>
+            <span className="topbar-date"><IconCalendar style={{verticalAlign:'middle',marginRight:4}} /> {dateStr} · {timeStr}</span>
             <button className={`darkmode-toggle ${darkMode ? 'on' : ''}`}
               onClick={() => setDarkMode(d => !d)} title="Toggle dark mode">
-              {darkMode ? '☀️' : '🌙'}
+              {darkMode ? <IconSun /> : <IconMoon />}
             </button>
           </div>
         </header>

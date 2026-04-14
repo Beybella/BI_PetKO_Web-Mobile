@@ -2,9 +2,22 @@ import React, { useState, useMemo, useEffect } from 'react';
 import useApi from '../hooks/useApi';
 import Cart, { fmt } from './Cart';
 import Receipt from './Receipt';
+import {
+  IconBox,
+  IconSearch,
+  IconWarning
+} from './IconsAll';
 
 const CATEGORIES = ['All','Cat Food','Dog Food','Hygiene','Medical','Accessories','Treats/Snacks'];
-const CAT_ICONS  = {'All':'🐾','Cat Food':'🐱','Dog Food':'🐶','Hygiene':'🧴','Medical':'💊','Accessories':'🎀','Treats/Snacks':'🦴'};
+const CAT_ICONS  = {
+  'All': <IconBox size={18} />,
+  'Cat Food': <IconBox size={18} />,
+  'Dog Food': <IconBox size={18} />,
+  'Hygiene': <IconBox size={18} />,
+  'Medical': <IconBox size={18} />,
+  'Accessories': <IconBox size={18} />,
+  'Treats/Snacks': <IconBox size={18} />
+}; // Replace with specific SVGs for each category as needed
 
 export default function POS() {
   const { data: apiInventory, loading } = useApi('/api/inventory');
@@ -67,7 +80,7 @@ export default function POS() {
     finally { setProcessing(false); }
   };
 
-  if (loading) return <div className="loading">Loading inventory...</div>;
+  if (loading) return <div className="loading"><IconBox size={24} style={{marginRight:6}} />Loading inventory...</div>;
   if (receipt)  return <Receipt receipt={receipt} onNew={() => setReceipt(null)} />;
 
   return (
@@ -75,10 +88,10 @@ export default function POS() {
       <div className="pos-left">
         <div className="card" style={{marginBottom:0}}>
           <div className="pos-header">
-            <span className="pos-title">🛍️ Products</span>
+            <span className="pos-title"><IconBox size={20} style={{verticalAlign:'middle',marginRight:6}} /> Products</span>
             <span className="pos-stock-count">{inventory?.length ?? 0} items</span>
           </div>
-          <input className="pos-search" type="text" placeholder="🔍  Search by name or brand..."
+          <input className="pos-search" type="text" placeholder="Search by name or brand..."
             value={search} onChange={e => setSearch(e.target.value)} autoFocus />
           <div className="pos-cat-tabs">
             {CATEGORIES.map(cat => (
@@ -89,7 +102,7 @@ export default function POS() {
           <div className="pos-results-info">{displayed.length} product{displayed.length!==1?'s':''}{search&&` for "${search}"`}</div>
           <div className="pos-product-grid">
             {displayed.length === 0
-              ? <div className="pos-empty"><div style={{fontSize:'2rem'}}>🔍</div><p>No products found</p></div>
+              ? <div className="pos-empty"><div style={{fontSize:'2rem'}}><IconSearch size={20} /></div><p>No products found</p></div>
               : displayed.map(item => {
                 const inCart = cart.find(c => c.id === item.id);
                 return (
@@ -97,13 +110,13 @@ export default function POS() {
                     className={`pos-product-card ${item.stock===0?'out-of-stock':''} ${inCart?'in-cart':''}`}
                     onClick={() => item.stock > 0 && addToCart(item)} disabled={item.stock===0}>
                     {inCart && <span className="pos-in-cart-badge">{inCart.qty}</span>}
-                    <div className="pos-product-cat-icon">{CAT_ICONS[item.category]??'📦'}</div>
+                    <div className="pos-product-cat-icon">{CAT_ICONS[item.category]??<IconBox size={16} />}</div>
                     <div className="pos-product-name">{item.name}</div>
                     <div className="pos-product-brand">{item.brand}</div>
                     <div className="pos-product-footer">
                       <span className="pos-product-price">{fmt(item.retail_price)}</span>
                       <span className={`pos-product-stock ${item.stock===0?'out':item.stock<=item.reorder?'low':''}`}>
-                        {item.stock===0?'✕ Out':`${item.stock} left`}
+                        {item.stock===0?(<><IconWarning size={14} style={{verticalAlign:'middle',marginRight:2}} />Out</>):`${item.stock} left`}
                       </span>
                     </div>
                   </button>

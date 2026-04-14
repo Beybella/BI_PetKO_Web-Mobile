@@ -1,5 +1,12 @@
+
 import React, { useState } from 'react';
 import useApi from '../hooks/useApi';
+import {
+  IconAlert,
+  IconWarning,
+  IconCheck,
+  IconBox
+} from './IconsAll';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
@@ -59,25 +66,25 @@ export default function LowStock() {
       {/* KPI Cards */}
       <div className="stats-grid">
         <div className="stat-card red">
-          <div className="kpi-icon">🚨</div>
+          <div className="kpi-icon"><IconAlert size={24} /></div>
           <div className="stat-label">Critical</div>
           <div className="stat-value">{critical.length}</div>
           <div className="stat-sub">Below reorder level</div>
         </div>
         <div className="stat-card yellow">
-          <div className="kpi-icon">⚠️</div>
+          <div className="kpi-icon"><IconWarning size={24} /></div>
           <div className="stat-label">Warning</div>
           <div className="stat-value">{warning.length}</div>
           <div className="stat-sub">At reorder level</div>
         </div>
         <div className="stat-card green">
-          <div className="kpi-icon">✅</div>
+          <div className="kpi-icon"><IconCheck size={24} /></div>
           <div className="stat-label">Well Stocked</div>
           <div className="stat-value">{ok.length}</div>
           <div className="stat-sub">Above reorder level</div>
         </div>
         <div className="stat-card blue">
-          <div className="kpi-icon">💸</div>
+          <div className="kpi-icon"><IconBox size={24} /></div>
           <div className="stat-label">Est. Restock Cost</div>
           <div className="stat-value" style={{ fontSize: '1rem' }}>{fmt(totalRestockCost)}</div>
           <div className="stat-sub">Critical items to 2× reorder</div>
@@ -88,7 +95,7 @@ export default function LowStock() {
       {catBreakdown.length > 0 && (
         <div className="card" style={{ marginBottom: 20 }}>
           <div className="chart-card-header">
-            <div className="chart-card-title">📂 Critical by Category</div>
+            <div className="chart-card-title"><IconBox size={18} style={{marginRight:6}} /> Critical by Category</div>
           </div>
           <div className="ls-cat-grid">
             {catBreakdown.map(([cat, count]) => (
@@ -127,11 +134,11 @@ export default function LowStock() {
       {/* Critical */}
       <div className="card" style={{ marginBottom: 20 }}>
         <div className="chart-card-header">
-          <div className="chart-card-title">🚨 Critical — Below Reorder Level</div>
+          <div className="chart-card-title"><IconAlert size={18} style={{marginRight:6}} /> Critical — Below Reorder Level</div>
           <span className="ls-count-badge ls-badge-red">{criticalList.length}</span>
         </div>
         {criticalList.length === 0
-          ? <p className="alert-empty">No critical items 🎉</p>
+          ? <p className="alert-empty">No critical items</p>
           : criticalList.map(i => <AlertItem key={i.id} item={i} type="critical" />)
         }
       </div>
@@ -139,7 +146,7 @@ export default function LowStock() {
       {/* Warning */}
       <div className="card">
         <div className="chart-card-header">
-          <div className="chart-card-title">⚠️ Warning — At Reorder Level</div>
+          <div className="chart-card-title"><IconWarning size={18} style={{marginRight:6}} /> Warning — At Reorder Level</div>
           <span className="ls-count-badge ls-badge-yellow">{warningList.length}</span>
         </div>
         {warningList.length === 0

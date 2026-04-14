@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  IconCart,
+  IconCheck,
+  IconWarning
+} from './IconsAll';
 
 export const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
@@ -13,7 +18,7 @@ export default function Cart({ cart, cartCount, cash, setCash, discount, setDisc
     <div className="card pos-cart-card" style={{ marginBottom: 0 }}>
       {/* Cart header */}
       <div className="pos-cart-header">
-        <span className="pos-cart-title">🛒 Cart</span>
+        <span className="pos-cart-title"><IconCart size={20} style={{verticalAlign:'middle',marginRight:6}} /> Cart</span>
         {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
         {cart.length > 0 && (
           <button className="clear-btn-sm" onClick={onClear}>Clear all</button>
@@ -24,7 +29,7 @@ export default function Cart({ cart, cartCount, cash, setCash, discount, setDisc
       {cart.length === 0
         ? (
           <div className="cart-empty">
-            <div style={{ fontSize: '2.5rem' }}>🛒</div>
+            <div style={{ fontSize: '2.5rem' }}><IconCart size={32} /></div>
             <p>Cart is empty</p>
             <p style={{ fontSize: '.78rem' }}>Click a product to add it</p>
           </div>
@@ -72,7 +77,7 @@ export default function Cart({ cart, cartCount, cash, setCash, discount, setDisc
         {/* Discount */}
         <div className="payment-row">
           <label style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-            🏷️ Discount
+            <IconCheck size={16} /> Discount
           </label>
           <input
             className="cash-input"
@@ -116,14 +121,14 @@ export default function Cart({ cart, cartCount, cash, setCash, discount, setDisc
           </div>
         )}
 
-        {error && <p className="pos-error">⚠️ {error}</p>}
+        {error && <p className="pos-error"><IconWarning size={16} style={{marginRight:4}} /> {error}</p>}
 
         <button
           className="checkout-btn"
           onClick={onCheckout}
           disabled={!cart.length || processing}
         >
-          {processing ? '⏳ Processing...' : `✓ Checkout  ${cart.length > 0 ? fmt(total) : ''}`}
+          {processing ? 'Processing...' : (<><IconCheck size={16} style={{marginRight:4}} /> Checkout  {cart.length > 0 ? fmt(total) : ''}</>)}
         </button>
       </div>
     </div>

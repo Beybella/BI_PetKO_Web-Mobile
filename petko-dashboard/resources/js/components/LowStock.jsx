@@ -5,7 +5,9 @@ import {
   IconAlert,
   IconWarning,
   IconCheck,
-  IconBox
+  IconBox,
+  MoneySack,
+  IconCash
 } from './IconsAll';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
@@ -34,11 +36,16 @@ export default function LowStock() {
     return s + needed * (i.unit_cost || 0);
   }, 0);
 
-  const categories = [...new Set(data.map(i => i.category))].sort();
+  const categories = [...new Set(data.flatMap(i => (i.category || '').split(',').map(c => c.trim())))].sort();
 
-  // Category breakdown
+  // Category breakdown (split and count each category)
   const catMap = {};
-  critical.forEach(i => { catMap[i.category] = (catMap[i.category] || 0) + 1; });
+  critical.forEach(i => {
+    (i.category || '').split(',').map(c => c.trim()).forEach(cat => {
+      if (!cat) return;
+      catMap[cat] = (catMap[cat] || 0) + 1;
+    });
+  });
   const catBreakdown = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
 
   const sortAndFilter = (items) => {
@@ -84,7 +91,7 @@ export default function LowStock() {
           <div className="stat-sub">Above reorder level</div>
         </div>
         <div className="stat-card blue">
-          <div className="kpi-icon"><IconBox size={24} /></div>
+          <div className="kpi-icon"><IconCash size={24} /></div>
           <div className="stat-label">Est. Restock Cost</div>
           <div className="stat-value" style={{ fontSize: '1rem' }}>{fmt(totalRestockCost)}</div>
           <div className="stat-sub">Critical items to 2× reorder</div>

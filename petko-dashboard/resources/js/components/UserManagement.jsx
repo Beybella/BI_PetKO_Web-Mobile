@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { IconKey, Users } from './IconsAll';
 
 const EMPTY = { name: '', email: '', password: '', role: 'staff' };
 
@@ -63,7 +64,7 @@ export default function UserManagement() {
       <div className="card">
         <div className="inv-toolbar" style={{ marginBottom: 16 }}>
           <div style={{ flex: 1 }}>
-            <div className="chart-card-title">👥 User Management</div>
+            <div className="chart-card-title"><Users size={18} style={{marginRight:6}} /> User Management</div>
             <div className="chart-card-sub">{users.length} account{users.length !== 1 ? 's' : ''}</div>
           </div>
           <button className="add-item-btn" onClick={() => { setShowAdd(true); setForm(EMPTY); setAddError(''); }}>
@@ -105,7 +106,7 @@ export default function UserManagement() {
       {showAdd && (
         <div className="modal-overlay" onClick={() => setShowAdd(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginBottom: 4 }}>➕ Add User</h3>
+            <h3 style={{ marginBottom: 4 }}><Users size={18} style={{marginRight:6}} /> Add User</h3>
             <p style={{ color: 'var(--muted)', fontSize: '.82rem', marginBottom: 16 }}>Create a new staff or admin account.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
@@ -157,7 +158,7 @@ export default function UserManagement() {
       {/* Change Password */}
       <div className="card" style={{ marginTop: 20 }}>
         <div className="chart-card-header">
-          <div className="chart-card-title">🔑 Change My Password</div>
+          <div className="chart-card-title"><IconKey size={18} style={{marginRight:6}} /> Change My Password</div>
           <button className="edit-btn" onClick={() => setShowPwChange(v => !v)}>
             {showPwChange ? 'Cancel' : 'Change'}
           </button>

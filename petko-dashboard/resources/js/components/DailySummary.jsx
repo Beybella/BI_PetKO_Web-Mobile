@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IconCalendar, IconCheck, IconTrophy, IconAnalytics, IconCart, IconBox, IconWarning } from './IconsAll';
+import { IconCalendar, IconCheck, IconTrophy, IconAnalytics, IconCart, IconBox, IconWarning, MoneySack, IconCash, MoneyBillTrend } from './IconsAll';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
@@ -55,19 +55,19 @@ export default function DailySummary() {
           <div className="ds-date-label"><IconCalendar size={18} style={{marginRight:6}} /> Today — {summary.date}</div>
           <div className="stats-grid">
             <div className="stat-card green">
-              <div className="kpi-icon"><IconAnalytics size={24} /></div>
+              <div className="kpi-icon"><MoneySack size={24} /></div>
               <div className="stat-label">Today's Sales</div>
               <div className="stat-value">{fmt(summary.total_sales)}</div>
               <div className="stat-sub">{summary.transactions} transaction{summary.transactions !== 1 ? 's' : ''}</div>
             </div>
             <div className="stat-card red">
-              <div className="kpi-icon"><IconBox size={24} /></div>
+              <div className="kpi-icon"><IconCash size={24} /></div>
               <div className="stat-label">Today's Expenses</div>
               <div className="stat-value">{fmt(summary.total_expenses)}</div>
               <div className="stat-sub">Logged today</div>
             </div>
             <div className="stat-card blue">
-              <div className="kpi-icon"><IconAnalytics size={24} /></div>
+              <div className="kpi-icon"><MoneyBillTrend size={24} /></div>
               <div className="stat-label">Net Income</div>
               <div className="stat-value" style={{ color: summary.net >= 0 ? 'var(--green)' : 'var(--primary)' }}>
                 {fmt(summary.net)}
@@ -113,7 +113,7 @@ export default function DailySummary() {
             {/* Expenses list */}
             <div className="card" style={{ marginBottom: 0 }}>
               <div className="chart-card-header">
-                <div className="chart-card-title"><IconBox size={18} style={{marginRight:6}} /> Today's Expenses</div>
+                <div className="chart-card-title"><IconCash size={18} style={{marginRight:6}} /> Today's Expenses</div>
                 <span className="chart-total-badge">{fmt(summary.total_expenses)}</span>
               </div>
               {summary.expenses.length === 0

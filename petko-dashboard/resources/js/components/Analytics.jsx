@@ -11,8 +11,12 @@ import {
   IconCheck,
   IconClose,
   IconWarning,
-  IconDownload
+  IconDownload,
+  MonthlySum,
+  MoneySack,
+  MoneyBillTrend
 } from './IconsAll';
+
 import useApi from '../hooks/useApi';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -301,7 +305,7 @@ export default function Analytics() {
 
   if (loading) return (
     <div className="analytics-loading">
-      <div className="loading-spinner"><IconAnalytics size={32} /></div>
+      <div className="loading-spinner">🐾</div>
       <p>Loading analytics...</p>
     </div>
   );
@@ -364,7 +368,7 @@ export default function Analytics() {
       {/* ── KPI Cards ── */}
       <div className="stats-grid" style={{ marginTop: 16 }}>
         <KpiCard
-          icon={<IconAnalytics size={24} />} label={`Total Sales${month !== 'all' ? ` (${new Date(month+'-02').toLocaleString('default',{month:'short'})})` : ''}`}
+          icon={<MoneySack size={24} />} label={`Total Sales${month !== 'all' ? ` (${new Date(month+'-02').toLocaleString('default',{month:'short'})})` : ''}`}
           value={fmt(totals.revenue)}
           delta={pct(totals.revenue, prevTotals?.revenue)}
           sub="vs last month" color="red" />
@@ -374,7 +378,7 @@ export default function Analytics() {
           delta={pct(totals.transactions, prevTotals?.transactions)}
           sub="vs last month" color="green" />
         <KpiCard
-          icon={<IconAnalytics size={24} />} label="Avg Daily Sales"
+          icon={<MoneyBillTrend size={24} />} label="Avg Daily Sales"
           value={fmt(avgDaily)}
           sub={`across ${dailyData.length} days`} color="yellow" />
         <KpiCard
@@ -388,7 +392,7 @@ export default function Analytics() {
       <div className="card analytics-chart-card" style={{ marginBottom: 20 }}>
         <div className="chart-card-header">
           <div>
-            <div className="chart-card-title"><IconAnalytics size={18} style={{marginRight:6}} /> Daily Sales Trend</div>
+            <div className="chart-card-title"><MoneyBillTrend size={18} style={{marginRight:6}} /> Daily Sales Trend</div>
             <div className="chart-card-sub">{dailyData.length} data points</div>
           </div>
           <div className="chart-total-badge">{fmt(totals.revenue)}</div>
@@ -482,7 +486,7 @@ export default function Analytics() {
 
         <div className="card" style={{ marginBottom: 0 }}>
           <div className="chart-card-header">
-            <div className="chart-card-title"><IconAnalytics size={18} style={{marginRight:6}} /> Monthly Summary</div>
+            <div className="chart-card-title"><MonthlySum size={18} style={{marginRight:6}} /> Monthly Summary</div>
           </div>
           <div className="table-wrap" style={{ marginTop: 8 }}>
             <table>

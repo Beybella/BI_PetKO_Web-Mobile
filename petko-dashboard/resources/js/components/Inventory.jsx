@@ -29,15 +29,21 @@ export default function Inventory() {
     fetch('/api/inventory').then(r => r.json()).then(d => { setData(d); setLoading(false); });
   }, []);
 
-  const categories = useMemo(() => data ? [...new Set(data.map(i => i.category))].sort() : [], [data]);
+  // Support multiple categories per product (comma-separated)
+  const categories = useMemo(() => {
+    if (!data) return [];
+    const allCats = data.flatMap(i => (i.category || '').split(',').map(c => c.trim()));
+    return [...new Set(allCats)].sort();
+  }, [data]);
 
   const filtered = useMemo(() => {
     if (!data) return [];
     const q = search.toLowerCase();
-    return data.filter(i =>
-      (i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q)) &&
-      (!category || i.category === category)
-    );
+    return data.filter(i => {
+      const cats = (i.category || '').split(',').map(c => c.trim());
+      return (i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q)) &&
+        (!category || cats.includes(category));
+    });
   }, [data, search, category]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -143,7 +149,7 @@ export default function Inventory() {
       <div className="card">
         <div className="inv-toolbar">
           <div className="search-bar" style={{ flex:1, marginBottom:0 }}>
-            <input type="text" placeholder="🔍  Search by name or brand..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input type="text" placeholder="Search by name or brand..." value={search} onChange={e => setSearch(e.target.value)} />
             <select value={category} onChange={e => setCategory(e.target.value)}>
               <option value="">All Categories</option>
               {categories.map(c => <option key={c} value={c}>{c}</option>)}

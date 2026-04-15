@@ -5,19 +5,25 @@ import Receipt from './Receipt';
 import {
   IconBox,
   IconSearch,
-  IconWarning
+  IconWarning,
+  IconCatFA,
+  IconHygiene,
+  IconMedical,
+  IconAccessories,
+  IconTreats,
+  IconDogFA
 } from './IconsAll';
 
 const CATEGORIES = ['All','Cat Food','Dog Food','Hygiene','Medical','Accessories','Treats/Snacks'];
 const CAT_ICONS  = {
   'All': <IconBox size={18} />,
-  'Cat Food': <IconBox size={18} />,
-  'Dog Food': <IconBox size={18} />,
-  'Hygiene': <IconBox size={18} />,
-  'Medical': <IconBox size={18} />,
-  'Accessories': <IconBox size={18} />,
-  'Treats/Snacks': <IconBox size={18} />
-}; // Replace with specific SVGs for each category as needed
+  'Cat Food': <IconCatFA size={18} />,
+  'Dog Food': <IconDogFA size={18} />,
+  'Hygiene': <IconHygiene size={18} />,
+  'Medical': <IconMedical size={18} />,
+  'Accessories': <IconAccessories size={18} />,
+  'Treats/Snacks': <IconTreats size={18} />
+};
 
 export default function POS() {
   const { data: apiInventory, loading } = useApi('/api/inventory');
@@ -37,8 +43,10 @@ export default function POS() {
     if (!inventory) return [];
     return inventory.filter(i => {
       const q = search.toLowerCase();
+      // Support multiple categories per product (comma-separated)
+      const categories = (i.category || '').split(',').map(c => c.trim());
       return (!q || i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q))
-        && (activeCategory === 'All' || i.category === activeCategory);
+        && (activeCategory === 'All' || categories.includes(activeCategory));
     });
   }, [inventory, search, activeCategory]);
 
@@ -105,12 +113,17 @@ export default function POS() {
               ? <div className="pos-empty"><div style={{fontSize:'2rem'}}><IconSearch size={20} /></div><p>No products found</p></div>
               : displayed.map(item => {
                 const inCart = cart.find(c => c.id === item.id);
+                // Show the icon for the selected category if present, otherwise the first category
+                const categories = (item.category || '').split(',').map(c => c.trim());
+                const iconCat = activeCategory !== 'All' && categories.includes(activeCategory)
+                  ? CAT_ICONS[activeCategory]
+                  : CAT_ICONS[categories[0]] || <IconBox size={16} />;
                 return (
                   <button key={item.id}
                     className={`pos-product-card ${item.stock===0?'out-of-stock':''} ${inCart?'in-cart':''}`}
                     onClick={() => item.stock > 0 && addToCart(item)} disabled={item.stock===0}>
                     {inCart && <span className="pos-in-cart-badge">{inCart.qty}</span>}
-                    <div className="pos-product-cat-icon">{CAT_ICONS[item.category]??<IconBox size={16} />}</div>
+                    <div className="pos-product-cat-icon">{iconCat}</div>
                     <div className="pos-product-name">{item.name}</div>
                     <div className="pos-product-brand">{item.brand}</div>
                     <div className="pos-product-footer">

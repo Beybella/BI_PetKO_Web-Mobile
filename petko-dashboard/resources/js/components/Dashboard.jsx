@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IconAnalytics, IconCart, IconBox, IconAlert, IconCalendar, IconUser, IconClose, IconSun, IconMoon } from './IconsAll';
+import { IconAnalytics, IconCart, IconBox, IconAlert, IconCalendar, IconUser, IconClose, IconSun, IconMoon, IconCash, TrendUp } from './IconsAll';
 import { useAuth } from '../context/AuthContext';
 import Analytics from './Analytics';
 import LowStock from './LowStock';
@@ -9,7 +9,7 @@ import DailySummary from './DailySummary';
 import UserManagement from './UserManagement';
 
 const ALL_TABS = [
-  { key: 'dashboard',   label: 'Analytics',   icon: <IconAnalytics style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
+  { key: 'dashboard',   label: 'Analytics',   icon: <TrendUp style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
   { key: 'pos',         label: 'POS',          icon: <IconCart style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
   { key: 'inventory',   label: 'Inventory',    icon: <IconBox style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
   { key: 'lowstock',    label: 'Low Stock',    icon: <IconAlert style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },

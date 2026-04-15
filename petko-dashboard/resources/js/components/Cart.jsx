@@ -2,7 +2,8 @@ import React from 'react';
 import {
   IconCart,
   IconCheck,
-  IconWarning
+  IconWarning,
+  IconCash
 } from './IconsAll';
 
 export const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
@@ -99,7 +100,7 @@ export default function Cart({ cart, cartCount, cash, setCash, discount, setDisc
         </div>
 
         <div className="payment-row" style={{ marginTop: 10 }}>
-          <label style={{ fontWeight: 600 }}>💵 Cash Received</label>
+          <label style={{ fontWeight: 600 }}> <IconCash size={16} /> Cash Received</label>
           <input
             className="cash-input"
             type="number" min="0" step="1" placeholder="0.00"

@@ -10,7 +10,7 @@ export default function App() {
   if (loading) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'var(--bg)' }}>
       <div style={{ textAlign:'center', color:'var(--muted)' }}>
-        <div style={{ fontSize:'3rem', marginBottom:12 }}><IconAnalytics size={48} /></div>
+        <div style={{ fontSize:'3rem', marginBottom:12 }}>🐾</div>
         <p>Loading PetKO...</p>
       </div>
     </div>

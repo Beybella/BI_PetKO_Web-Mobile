@@ -510,15 +510,58 @@ export default function Analytics() {
       {/* ── Low Stock Alert ── */}
       {lowStockItems.length > 0 && (
         <div className="low-stock-strip">
-          <span className="low-stock-title"><IconAlert size={18} style={{marginRight:6}} /> Low Stock Alerts — {lowStockItems.length} item{lowStockItems.length > 1 ? 's' : ''} need reordering</span>
-          <ul>
-            {lowStockItems.map(i => (
-              <li key={i.id}><strong>{i.name}</strong> — {i.stock} left (reorder at {i.reorder})</li>
-            ))}
-          </ul>
+          <div className="low-stock-title" style={{marginBottom:8}}><IconAlert size={18} style={{marginRight:6}} /> Low Stock Alerts — {lowStockItems.length} item{lowStockItems.length > 1 ? 's' : ''} need reordering</div>
+          <div style={{overflowX:'auto'}}>
+            <table className="low-stock-table" style={{width:'100%',minWidth:480,background:'#fff',borderRadius:8,boxShadow:'0 2px 8px #0001',fontSize:'.97rem'}}>
+              <thead>
+                <tr style={{background:'#f8f8f8'}}>
+                  <th style={{padding:'8px 10px',textAlign:'left'}}>Item</th>
+                  <th style={{padding:'8px 10px',textAlign:'left'}}>Category</th>
+                  <th style={{padding:'10px 12px'}}>Current Stock</th>
+                  <th style={{padding:'10px 12px'}}>Reorder Level</th>
+                  <th style={{padding:'10px 12px'}}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lowStockItems.map(item => (
+                  <LowStockRow key={item.id} item={item} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+// Inline row component for updating stock (must be top-level, not inside Analytics)
+function LowStockRow({ item }) {
+  let status = 'OK', color = '#04B94D', label = 'OK';
+  if (item.stock < item.reorder) {
+    status = 'Critical'; color = '#F24C4C'; label = 'Critical';
+  } else if (item.stock === item.reorder) {
+    status = 'Warning'; color = '#F6E04B'; label = 'Warning';
+  }
+  return (
+    <tr style={{background: status==='Critical' ? '#fff5f5' : status==='Warning' ? '#fffbe5' : '#f8fff8'}}>
+      <td style={{padding:'10px 12px',fontWeight:600}}>{item.name}</td>
+      <td style={{padding:'10px 12px',color:'#555'}}>{item.category}</td>
+      <td style={{padding:'10px 12px',textAlign:'center',fontWeight:500}}>{item.stock}</td>
+      <td style={{padding:'10px 12px',textAlign:'center'}}>{item.reorder}</td>
+      <td style={{padding:'10px 12px',textAlign:'center'}}>
+        <span style={{
+          display:'inline-block',
+          padding:'2px 12px',
+          borderRadius:12,
+          background:color,
+          color: status==='Warning' ? '#222' : '#fff',
+          fontWeight:700,
+          fontSize:'.95rem',
+          letterSpacing:'.5px'
+        }}>{label}</span>
+      </td>
+    </tr>
   );
 }
 

@@ -1,8 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import useApi from '../hooks/useApi';
 import StatCard from '../components/StatCard';
 import { IconAlert, IconCart, IconTrendUp, IconMoneySack, IconBox, IconWarning } from '../components/Icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { printAnalytics } from '../utils/printPDF';
 import { colors, radius, font } from '../theme';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
@@ -10,6 +12,18 @@ const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigi
 export default function DashboardScreen() {
   const { data: sales, loading: sLoading } = useApi('/api/sales/summary');
   const { data: inv,   loading: iLoading } = useApi('/api/inventory');
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await printAnalytics(sales, inv, 'All Time');
+    } catch (e) {
+      Alert.alert('Export failed', e.message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   if (sLoading || iLoading) {
     return (
@@ -32,6 +46,18 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView style={s.page} contentContainerStyle={s.content}>
+
+      {/* Export button */}
+      <TouchableOpacity style={s.exportBtn} onPress={handleExport} disabled={exporting} activeOpacity={0.85}>
+        {exporting ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <>
+            <MaterialCommunityIcons name="file-pdf-box" size={20} color={colors.primary} />
+            <Text style={s.exportBtnText}>Export PDF Report</Text>
+          </>
+        )}
+      </TouchableOpacity>
 
       {/* KPI Grid */}
       <View style={s.grid}>
@@ -110,6 +136,11 @@ function StockAlertRow({ item, type }) {
 const s = StyleSheet.create({
   page:          { flex: 1, backgroundColor: colors.bg },
   content:       { padding: 16, paddingBottom: 40 },
+  center:        { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
+  paw:           { fontSize: 40, textAlign: 'center', marginBottom: 8 },
+  loadingText:   { fontSize: 16, color: colors.muted },
+  exportBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#fff', borderRadius: radius.full, paddingVertical: 12, marginBottom: 16, borderWidth: 2, borderColor: colors.primary, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
+  exportBtnText: { color: colors.primary, fontWeight: font.bold, fontSize: 14 },
   center:        { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
   paw:           { fontSize: 40, textAlign: 'center', marginBottom: 8 },
   loadingText:   { fontSize: 16, color: colors.muted },

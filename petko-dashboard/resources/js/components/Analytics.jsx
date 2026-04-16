@@ -164,22 +164,24 @@ export default function Analytics() {
       doc.line(14, y, W - 14, y);
       y += 8;
 
-      // ── KPI cards ──
+      // ── KPI cards — evenly spaced, text centered ──
       const kpis = [
         { label: 'Total Sales',     value: fmtPDF(totals.revenue) },
         { label: 'Transactions',    value: totals.transactions.toLocaleString() },
         { label: 'Avg Daily Sales', value: fmtPDF(avgDaily) },
         { label: 'Top Product',     value: topProductName },
       ];
+      const cardW = (W - 28 - 9) / 4; // full usable width ÷ 4 cards with 3 gaps of 3mm
       kpis.forEach((k, i) => {
-        const x = 14 + i * 46;
+        const x = 14 + i * (cardW + 3);
+        const cx = x + cardW / 2;
         doc.setFillColor(252, 250, 245); doc.setDrawColor(...BORDER);
-        doc.roundedRect(x, y, 43, 22, 2, 2, 'FD');
+        doc.roundedRect(x, y, cardW, 22, 2, 2, 'FD');
         doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(...MUTED);
-        doc.text(k.label.toUpperCase(), x + 3, y + 7);
+        doc.text(k.label.toUpperCase(), cx, y + 7, { align: 'center' });
         doc.setFont('helvetica', 'bold'); doc.setTextColor(...BROWN);
-        doc.setFontSize(k.label === 'Top Product' ? 6.5 : 9);
-        doc.text(String(k.value).slice(0, 22), x + 3, y + 16);
+        doc.setFontSize(9);
+        doc.text(String(k.value).slice(0, 22), cx, y + 16, { align: 'center' });
       });
       y += 30;
 
@@ -193,7 +195,7 @@ export default function Analytics() {
       doc.rect(14, y, W - 28, 8, 'FD');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
       let cx = 14;
-      mHeaders.forEach((h, i) => { doc.text(h, cx + 3, y + 5.5); cx += mColW[i]; });
+      mHeaders.forEach((h, i) => { doc.text(h, cx + mColW[i]/2, y + 5.5, { align: 'center' }); cx += mColW[i]; });
       y += 8;
 
       filteredMonthly.forEach((m, ri) => {
@@ -209,7 +211,7 @@ export default function Analytics() {
           else if (i === 2) doc.setTextColor(...RED);
           else if (i === 3) doc.setTextColor(...(m.net >= 0 ? GREEN : RED));
           else doc.setTextColor(...BROWN);
-          doc.text(v, cx + 3, y + 5); cx += mColW[i];
+          doc.text(v, cx + mColW[i]/2, y + 5, { align: 'center' }); cx += mColW[i];
         });
         y += 7;
       });
@@ -222,20 +224,20 @@ export default function Analytics() {
       doc.setFillColor(...YELLOW); doc.setDrawColor(...BORDER);
       doc.rect(14, y, W - 28, 8, 'FD');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
-      doc.text('#', 17, y + 5.5);
-      doc.text('Product', 26, y + 5.5);
-      doc.text('Revenue', W - 38, y + 5.5);
+      doc.text('#',       21,     y + 5.5, { align: 'center' });
+      doc.text('Product', W / 2,  y + 5.5, { align: 'center' });
+      doc.text('Revenue', W - 14, y + 5.5, { align: 'right' });
       y += 8;
 
       topProducts.slice(0, 10).forEach((p, i) => {
         if (i % 2 === 0) { doc.setFillColor(252, 250, 245); doc.rect(14, y, W - 28, 7, 'F'); }
         doc.setDrawColor(...BORDER); doc.line(14, y + 7, W - 14, y + 7);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MUTED);
-        doc.text(String(i + 1), 17, y + 5);
+        doc.text(String(i + 1), 21, y + 5, { align: 'center' });
         doc.setTextColor(...BROWN);
-        doc.text(p.name.length > 44 ? p.name.slice(0, 44) + '...' : p.name, 26, y + 5);
+        doc.text(p.name.length > 44 ? p.name.slice(0, 44) + '...' : p.name, W / 2, y + 5, { align: 'center' });
         doc.setFont('helvetica', 'bold'); doc.setTextColor(...GREEN);
-        doc.text(fmtPDF(p.value), W - 38, y + 5);
+        doc.text(fmtPDF(p.value), W - 14, y + 5, { align: 'right' });
         y += 7;
       });
 
@@ -296,7 +298,7 @@ export default function Analytics() {
       doc.line(14, y, W - 14, y);
       y += 8;
 
-      // summary stat cards
+      // ── Summary cards — evenly spaced, text centered ──
       const critical = inventory.filter(i => i.stock < i.reorder).length;
       const warning  = inventory.filter(i => i.stock === i.reorder).length;
       const ok       = inventory.filter(i => i.stock > i.reorder).length;
@@ -306,14 +308,17 @@ export default function Analytics() {
         { label: 'Warning',      value: warning,          accent: WARN  },
         { label: 'Critical',     value: critical,         accent: RED   },
       ];
+      const sCardW = (W - 28 - 9) / 4; // 4 cards, 3 gaps of 3mm
       summaries.forEach((s, i) => {
-        const x = 14 + i * 72;
+        const x = 14 + i * (sCardW + 3);
+        const cx = x + sCardW / 2;
         doc.setFillColor(252, 250, 245); doc.setDrawColor(...BORDER);
-        doc.roundedRect(x, y, 68, 22, 2, 2, 'FD');
+        doc.roundedRect(x, y, sCardW, 22, 2, 2, 'FD');
         doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(...MUTED);
-        doc.text(s.label.toUpperCase(), x + 4, y + 8);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(s.accent[0], s.accent[1], s.accent[2]);
-        doc.text(String(s.value), x + 4, y + 18);
+        doc.text(s.label.toUpperCase(), cx, y + 8, { align: 'center' });
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+        doc.setTextColor(s.accent[0], s.accent[1], s.accent[2]);
+        doc.text(String(s.value), cx, y + 18, { align: 'center' });
       });
       y += 30;
 
@@ -331,7 +336,10 @@ export default function Analytics() {
         doc.rect(14, y, W - 28, 7.5, 'FD');
         doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(...BROWN);
         let cx = 14;
-        headers.forEach((h, i) => { doc.text(h, cx + 2, y + 5); cx += colW[i]; });
+        headers.forEach((h, i) => {
+          doc.text(h, cx + colW[i] / 2, y + 5, { align: 'center' });
+          cx += colW[i];
+        });
         y += 7.5;
       };
       drawHeader();
@@ -363,7 +371,7 @@ export default function Analytics() {
             const sc = status === 'Critical' ? RED : status === 'Warning' ? WARN : GREEN;
             doc.setTextColor(...sc); doc.setFont('helvetica', 'bold');
           } else { doc.setTextColor(...BROWN); doc.setFont('helvetica', 'normal'); }
-          doc.text(v, cx + 2, y + 4.5); cx += colW[i];
+          doc.text(v, cx + colW[i] / 2, y + 4.5, { align: 'center' }); cx += colW[i];
         });
         y += 6.5;
       });

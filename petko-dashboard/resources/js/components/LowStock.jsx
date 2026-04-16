@@ -178,7 +178,7 @@ function AlertItem({ item, type }) {
         <div className="ls-progress-wrap">
           <div className="ls-progress-bar" style={{
             width: `${pct}%`,
-            background: type === 'warn' ? '#F6E04B' : '#F24C4C'
+            background: type === 'warn' ? '#D4A853' : '#C0392B'
           }} />
         </div>
         <div className="alert-meta">{item.stock} / {item.reorder} units ({pct}% of reorder)</div>

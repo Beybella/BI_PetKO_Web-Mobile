@@ -25,8 +25,7 @@ export default function Login() {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <span style={{ fontSize: '3rem' }}>🐾</span>
-          <h1 className="login-title">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></h1>
+          <img src="/logo.png" alt="PetKO" style={{ height: 72, objectFit: 'contain', marginBottom: 8 }} />
           <p className="login-sub">Everything Your Pets Need, All in One Place.</p>
         </div>
 

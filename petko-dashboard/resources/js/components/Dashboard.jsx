@@ -92,8 +92,8 @@ export default function Dashboard() {
       {/* Permanent sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <span style={{ fontSize: '2.2rem' }}><IconCart size={28} /></span>
-          <span className="sidebar-logo-text">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></span>
+          <span><IconCart size={24} /></span>
+          <img src="/logo.png" alt="PetKO" style={{ height: 38, objectFit: 'contain' }} />
         </div>
         <nav className="sidebar-nav"><NavItems /></nav>
         <div className="sidebar-user">
@@ -107,8 +107,8 @@ export default function Dashboard() {
       {mobileOpen && <div className="drawer-overlay" onClick={() => setMobileOpen(false)} />}
       <aside className={`sidebar sidebar-mobile ${mobileOpen ? 'open' : ''}`} ref={drawerRef}>
         <div className="sidebar-logo">
-          <span style={{ fontSize: '2.2rem' }}><IconCart size={28} /></span>
-          <span className="sidebar-logo-text">Pet<span style={{ color: 'var(--yellow)' }}>KO</span></span>
+          <span><IconCart size={24} /></span>
+          <img src="/logo.png" alt="PetKO" style={{ height: 38, objectFit: 'contain', flex: 1 }} />
           <button className="drawer-close" onClick={() => setMobileOpen(false)}><IconClose /></button>
         </div>
         <nav className="sidebar-nav"><NavItems onClose={() => setMobileOpen(false)} /></nav>

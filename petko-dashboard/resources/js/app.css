@@ -336,7 +336,7 @@ tr:hover td { background: #FFF8E7; }
 .loading { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--muted); font-size: .95rem; }
 
 /* ── POS ── */
-.pos-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.pos-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start; }
 .pos-left, .pos-right { min-width: 0; }
 
 .pos-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -502,7 +502,7 @@ tr:hover td { background: #FFF8E7; }
   .sidebar-logo-text { font-size: 1.2rem; }
   .sidebar-label { font-size: .8rem; }
   .page-content { padding: 16px 20px 36px; }
-  .pos-layout { grid-template-columns: 1.1fr 0.9fr; }
+  .pos-layout { grid-template-columns: 2fr 1fr; }
   .pos-product-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
   .analytics-2col { gap: 14px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }

@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, FlatList,
-  Alert, ActivityIndicator, ScrollView,
+  Alert, ActivityIndicator, ScrollView, Animated,
   KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback,
   Dimensions,
 } from 'react-native';
@@ -47,6 +47,13 @@ export default function POSScreen() {
   const [processing, setProcessing] = useState(false);
   const [receipt, setReceipt]     = useState(null);
   const [showCart, setShowCart]   = useState(false);
+  const [kbOffset, setKbOffset]   = useState(0);
+
+  useEffect(() => {
+    const show = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', e => setKbOffset(e.endCoordinates.height));
+    const hide = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setKbOffset(0));
+    return () => { show.remove(); hide.remove(); };
+  }, []);
 
   useEffect(() => { if (apiInv) setInventory(apiInv); }, [apiInv]);
 
@@ -288,7 +295,7 @@ export default function POSScreen() {
 
       {/* ── Cart Sheet ── */}
       {showCart && (
-        <View style={s.cartSheet}>
+        <View style={[s.cartSheet, Platform.OS === 'ios' && { bottom: kbOffset }]}>
           {/* Header */}
           <View style={s.cartHeader}>
             <Text style={s.cartTitle}>🛒 Cart ({cartCount})</Text>

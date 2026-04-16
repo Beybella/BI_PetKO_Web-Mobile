@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import useApi from '../hooks/useApi';
 import StatCard from '../components/StatCard';
@@ -7,19 +7,33 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { printAnalytics, printInventory } from '../utils/printPDF';
 import { colors, darkColors, radius, font } from '../theme';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
 export default function DashboardScreen() {
   const { dark } = useTheme();
   const c = dark ? darkColors : colors;
+  const { user } = useAuth();
   const { data: sales, loading: sLoading } = useApi('/api/sales/summary');
   const { data: inv,   loading: iLoading } = useApi('/api/inventory');
   const [exporting, setExporting] = useState(false);
+  const [month, setMonth] = useState('all');
+
+  const months = useMemo(() => sales?.monthly?.map(m => m.month) ?? [], [sales]);
+
+  const selectedLabel = month === 'all'
+    ? 'All Time'
+    : new Date(month + '-02').toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  const filteredMonthly = useMemo(() => {
+    if (!sales?.monthly) return [];
+    return month === 'all' ? sales.monthly : sales.monthly.filter(m => m.month === month);
+  }, [sales, month]);
 
   const handleExport = async () => {
     setExporting(true);
-    try { await printAnalytics(sales, inv, 'All Time'); }
+    try { await printAnalytics(filteredMonthly, sales, inv, selectedLabel, user?.name); }
     catch (e) { Alert.alert('Export failed', e.message); }
     finally { setExporting(false); }
   };
@@ -31,10 +45,10 @@ export default function DashboardScreen() {
     </View>
   );
 
-  const totals = sales?.monthly?.reduce(
-    (a, m) => ({ revenue: a.revenue + m.revenue, transactions: a.transactions + m.transactions, expenses: a.expenses + m.expenses }),
+  const totals = filteredMonthly.reduce(
+    (a, m) => ({ revenue: a.revenue + m.revenue, transactions: a.transactions + m.transactions, expenses: a.expenses + (m.expenses ?? 0) }),
     { revenue: 0, transactions: 0, expenses: 0 }
-  ) ?? { revenue: 0, transactions: 0, expenses: 0 };
+  );
 
   const lowStockItems = inv ? inv.filter(i => i.stock < i.reorder) : [];
   const warningItems  = inv ? inv.filter(i => i.stock === i.reorder) : [];
@@ -43,6 +57,31 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: c.bg }} contentContainerStyle={s.content}>
+
+      {/* Period label */}
+      <Text style={[s.periodLabel, { color: c.primary }]}>{selectedLabel} Performance</Text>
+
+      {/* Month filter */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.filterRow} contentContainerStyle={s.filterContent}>
+        <TouchableOpacity
+          style={[s.filterChip, month === 'all' && { backgroundColor: c.primary }]}
+          onPress={() => setMonth('all')}
+        >
+          <Text style={[s.filterChipText, { color: month === 'all' ? '#fff' : c.muted }]}>All</Text>
+        </TouchableOpacity>
+        {months.map(m => (
+          <TouchableOpacity
+            key={m}
+            style={[s.filterChip, month === m && { backgroundColor: c.primary }]}
+            onPress={() => setMonth(m)}
+          >
+            <Text style={[s.filterChipText, { color: month === m ? '#fff' : c.muted }]}>
+              {new Date(m + '-02').toLocaleString('default', { month: 'short', year: 'numeric' })}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       {/* Export buttons */}
       <TouchableOpacity style={[s.exportBtn, { backgroundColor: c.card, borderColor: c.primary, borderWidth: 1.5 }]} onPress={handleExport} disabled={exporting} activeOpacity={0.85}>
         {exporting ? <ActivityIndicator color={c.primary} /> : (
@@ -53,7 +92,7 @@ export default function DashboardScreen() {
         )}
       </TouchableOpacity>
       <TouchableOpacity style={[s.exportBtn, { backgroundColor: c.card, borderColor: c.green, borderWidth: 1.5, marginTop: -8 }]}
-        onPress={async () => { try { await printInventory(inv); } catch(e) { Alert.alert('Export failed', e.message); } }}
+        onPress={async () => { try { await printInventory(inv, user?.name); } catch(e) { Alert.alert('Export failed', e.message); } }}
         activeOpacity={0.85}>
         <MaterialCommunityIcons name="package-variant-closed" size={20} color={c.green} />
         <Text style={[s.exportBtnText, { color: c.green }]}>Export Inventory Report</Text>
@@ -133,6 +172,11 @@ const s = StyleSheet.create({
   center:        { flex: 1, alignItems: 'center', justifyContent: 'center' },
   paw:           { fontSize: 40, textAlign: 'center', marginBottom: 8 },
   content:       { padding: 16, paddingBottom: 40 },
+  periodLabel:   { fontSize: 13, fontWeight: font.bold, marginBottom: 8 },
+  filterRow:     { marginBottom: 16 },
+  filterContent: { flexDirection: 'row', gap: 8, paddingRight: 8 },
+  filterChip:    { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.full, backgroundColor: 'transparent', borderWidth: 1, borderColor: '#ccc' },
+  filterChipText:{ fontSize: 12, fontWeight: font.bold },
   exportBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: radius.md, paddingVertical: 12, marginBottom: 16 },
   exportBtnText: { fontWeight: font.bold, fontSize: 14 },
   grid:          { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },

@@ -1,0 +1,30 @@
+import React from 'react';
+import { MaterialCommunityIcons, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+
+const s = (size = 20) => size;
+
+export const IconCart        = ({ size, color }) => <MaterialCommunityIcons name="cart-outline"           size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconBox         = ({ size, color }) => <MaterialCommunityIcons name="package-variant-closed" size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconAlert       = ({ size, color }) => <MaterialCommunityIcons name="alert-circle-outline"   size={s(size)} color={color ?? '#F24C4C'} />;
+export const IconWarning     = ({ size, color }) => <MaterialCommunityIcons name="alert-outline"          size={s(size)} color={color ?? '#F6E04B'} />;
+export const IconCheck       = ({ size, color }) => <MaterialCommunityIcons name="check-circle-outline"   size={s(size)} color={color ?? '#04B94D'} />;
+export const IconUser        = ({ size, color }) => <MaterialCommunityIcons name="account-outline"        size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconSearch      = ({ size, color }) => <MaterialCommunityIcons name="magnify"                size={s(size)} color={color ?? '#7a7a9a'} />;
+export const IconAnalytics   = ({ size, color }) => <MaterialCommunityIcons name="chart-line"             size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconTrophy      = ({ size, color }) => <MaterialCommunityIcons name="trophy-outline"         size={s(size)} color={color ?? '#F6E04B'} />;
+export const IconCash        = ({ size, color }) => <MaterialCommunityIcons name="cash-multiple"          size={s(size)} color={color ?? '#04B94D'} />;
+export const IconCalendar    = ({ size, color }) => <MaterialCommunityIcons name="calendar-outline"       size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconClose       = ({ size, color }) => <MaterialCommunityIcons name="close"                  size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconPlus        = ({ size, color }) => <MaterialCommunityIcons name="plus"                   size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconMinus       = ({ size, color }) => <MaterialCommunityIcons name="minus"                  size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconTrash       = ({ size, color }) => <MaterialCommunityIcons name="trash-can-outline"      size={s(size)} color={color ?? '#F24C4C'} />;
+export const IconEdit        = ({ size, color }) => <MaterialCommunityIcons name="pencil-outline"         size={s(size)} color={color ?? '#2699F7'} />;
+export const IconLogout      = ({ size, color }) => <MaterialCommunityIcons name="logout"                 size={s(size)} color={color ?? '#F24C4C'} />;
+export const IconKey         = ({ size, color }) => <MaterialCommunityIcons name="key-outline"            size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconTrendUp     = ({ size, color }) => <MaterialCommunityIcons name="trending-up"            size={s(size)} color={color ?? '#04B94D'} />;
+export const IconMoneySack   = ({ size, color }) => <MaterialCommunityIcons name="sack"                   size={s(size)} color={color ?? '#04B94D'} />;
+export const IconCatFood     = ({ size, color }) => <MaterialCommunityIcons name="cat"                    size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconDogFood     = ({ size, color }) => <MaterialCommunityIcons name="dog"                    size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconPaw         = ({ size, color }) => <MaterialCommunityIcons name="paw"                    size={s(size)} color={color ?? '#F24C4C'} />;
+export const IconUsers       = ({ size, color }) => <MaterialCommunityIcons name="account-group-outline"  size={s(size)} color={color ?? '#1a1a2e'} />;
+export const IconRefresh     = ({ size, color }) => <MaterialCommunityIcons name="refresh"                size={s(size)} color={color ?? '#2699F7'} />;

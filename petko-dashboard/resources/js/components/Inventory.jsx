@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = ['Cat Food','Dog Food','Hygiene','Medical','Accessories','Treats/Snacks'];
-const EMPTY_FORM = { name:'', category:'Cat Food', brand:'', unit_cost:'', retail_price:'', stock:'', reorder:'' };
+const EMPTY_FORM = { name:'', category:'', brand:'', unit_cost:'', retail_price:'', stock:'', reorder:'' };
 const PAGE_SIZE  = 15;
 
 export default function Inventory() {
@@ -83,6 +83,7 @@ export default function Inventory() {
     if (!form.name || !form.brand || !form.unit_cost || !form.retail_price || form.stock === '' || form.reorder === '') {
       setAddError('Please fill in all fields.'); return;
     }
+    if (!form.category) { setAddError('Please select at least one category.'); return; }
     setAddError(''); setAddSaving(true);
     try {
       const res  = await fetch('/api/inventory', {
@@ -285,11 +286,31 @@ function FormModal({ title, onSubmit, onClose, form, setForm, addError, addSavin
                 value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} />
             </div>
           ))}
-          <div className="add-form-field">
-            <label>Category *</label>
-            <select className="modal-input" value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
+          <div className="add-form-field" style={{ gridColumn: '1 / -1' }}>
+            <label>Category * <span style={{ color:'var(--muted)', fontWeight:400 }}>(select multiple)</span></label>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:4 }}>
+              {CATEGORIES.map(c => {
+                const cats = (form.category || '').split(',').map(x => x.trim()).filter(Boolean);
+                const selected = cats.includes(c);
+                return (
+                  <button key={c} type="button"
+                    onClick={() => {
+                      const current = (form.category || '').split(',').map(x => x.trim()).filter(Boolean);
+                      const next = selected ? current.filter(x => x !== c) : [...current, c];
+                      setForm(p => ({ ...p, category: next.join(',') }));
+                    }}
+                    style={{
+                      padding:'5px 14px', borderRadius:999, fontSize:'.78rem', fontWeight:600,
+                      cursor:'pointer', transition:'all .15s', fontFamily:'inherit',
+                      background: selected ? 'var(--primary)' : 'white',
+                      color: selected ? 'white' : 'var(--muted)',
+                      border: selected ? '2px solid var(--primary)' : '2px solid var(--border)',
+                    }}>
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
         {addError && <p style={{ color:'var(--primary)', fontSize:'.82rem', marginTop:8 }}>⚠️ {addError}</p>}

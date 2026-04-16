@@ -3,16 +3,19 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator, Image } from 'react-native';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import LoginScreen     from './src/screens/LoginScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import POSScreen       from './src/screens/POSScreen';
 import InventoryScreen from './src/screens/InventoryScreen';
 import LowStockScreen  from './src/screens/LowStockScreen';
 import ProfileScreen   from './src/screens/ProfileScreen';
-import { colors } from './src/theme';
+import UsersScreen     from './src/screens/UsersScreen';
+import { colors, darkColors } from './src/theme';
+import { API_BASE } from './src/config';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -20,64 +23,66 @@ const Stack = createNativeStackNavigator();
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const TAB_ICONS = {
-  Dashboard: { name: 'chart-line',             color: colors.primary },
-  POS:       { name: 'cart-outline',            color: colors.primary },
-  Inventory: { name: 'package-variant-closed',  color: colors.primary },
-  LowStock:  { name: 'alert-circle-outline',    color: colors.primary },
-  Profile:   { name: 'account-outline',         color: colors.primary },
+  Dashboard: 'chart-line',
+  POS:       'cart-outline',
+  Inventory: 'package-variant-closed',
+  LowStock:  'alert-circle-outline',
+  Users:     'account-group-outline',
+  Profile:   'account-outline',
 };
-
-function TabIcon({ name, focused }) {
-  const icon = TAB_ICONS[name];
-  return (
-    <MaterialCommunityIcons
-      name={icon.name}
-      size={24}
-      color={focused ? colors.primary : colors.muted}
-    />
-  );
-}
 
 function AppTabs() {
   const { user } = useAuth();
-  const isAdmin  = user?.role === 'admin';
+  const { dark } = useTheme();
+  const c = dark ? darkColors : colors;
+  const isAdmin = user?.role === 'admin';
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
-        tabBarActiveTintColor:   colors.primary,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle:      { borderTopColor: '#f0e8d8', paddingBottom: 4, height: 60 },
+        tabBarIcon: ({ focused }) => (
+          <MaterialCommunityIcons
+            name={TAB_ICONS[route.name]}
+            size={24}
+            color={focused ? c.primary : c.muted}
+          />
+        ),
+        tabBarActiveTintColor:   c.primary,
+        tabBarInactiveTintColor: c.muted,
+        tabBarStyle:      { borderTopColor: c.border, backgroundColor: c.card, paddingBottom: 4, height: 60 },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700', marginBottom: 4 },
-        headerStyle:      { backgroundColor: colors.primary },
-        headerTintColor:  '#fff',
-        headerTitleStyle: { fontWeight: '800', fontSize: 18 },
+        headerStyle:      { backgroundColor: c.card },
+        headerTintColor:  c.text,
+        headerTitleStyle: { fontWeight: '800', fontSize: 18, color: c.text },
+        headerLeft: () => (
+          <Image
+            source={{ uri: `${API_BASE}/logo.png` }}
+            style={{ width: 80, height: 28, marginLeft: 12 }}
+            resizeMode="contain"
+          />
+        ),
       })}
     >
-      {isAdmin && (
-        <Tab.Screen
-          name="Dashboard"
-          component={DashboardScreen}
-          options={{ title: '🐾 PetKO', tabBarLabel: 'Dashboard' }}
-        />
-      )}
-      <Tab.Screen name="POS"       component={POSScreen}       options={{ tabBarLabel: 'POS' }} />
-      <Tab.Screen name="Inventory" component={InventoryScreen} options={{ tabBarLabel: 'Inventory' }} />
+      {isAdmin && <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarLabel: 'Dashboard', title: '' }} />}
+      <Tab.Screen name="POS"       component={POSScreen}       options={{ tabBarLabel: 'POS',       title: 'POS' }} />
+      <Tab.Screen name="Inventory" component={InventoryScreen} options={{ tabBarLabel: 'Inventory', title: 'Inventory' }} />
       <Tab.Screen name="LowStock"  component={LowStockScreen}  options={{ tabBarLabel: 'Low Stock', title: 'Low Stock' }} />
-      <Tab.Screen name="Profile"   component={ProfileScreen}   options={{ tabBarLabel: 'Profile' }} />
+      {isAdmin && <Tab.Screen name="Users" component={UsersScreen} options={{ tabBarLabel: 'Users', title: 'Users' }} />}
+      <Tab.Screen name="Profile"   component={ProfileScreen}   options={{ tabBarLabel: 'Profile',   title: 'Profile' }} />
     </Tab.Navigator>
   );
 }
 
 function RootNavigator() {
   const { user, loading } = useAuth();
+  const { dark } = useTheme();
+  const c = dark ? darkColors : colors;
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-        <Text style={{ fontSize: 40, marginBottom: 12 }}>🐾</Text>
-        <ActivityIndicator color={colors.primary} size={36} />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bg }}>
+        <Image source={{ uri: `${API_BASE}/logo.png` }} style={{ width: 120, height: 48, marginBottom: 20 }} resizeMode="contain" />
+        <ActivityIndicator color={c.primary} size={36} />
       </View>
     );
   }
@@ -98,9 +103,11 @@ function RootNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

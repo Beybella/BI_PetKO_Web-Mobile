@@ -78,8 +78,9 @@ export async function printAnalytics(filteredMonthly, sales, inv, periodLabel = 
 
   // top products: prefer filtered month's data, fall back to all-time
   const topProducts = (() => {
-    const src = (monthly.length === 1 ? monthly[0]?.top_products : null) ?? sales?.top_products ?? {};
-    return Object.entries(src).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
+    const src = (monthly.length === 1 ? monthly[0]?.top_products : null) ?? sales?.top_products ?? [];
+    if (Array.isArray(src)) return src;
+    return Object.entries(src).map(([name, value]) => ({ name, revenue: value, units: 0 }));
   })();
 
   const monthRows = monthly.map((m, i) => `
@@ -96,7 +97,8 @@ export async function printAnalytics(filteredMonthly, sales, inv, periodLabel = 
     <tr style="background:${i % 2 === 0 ? '#fffdf5' : '#fff'}">
       <td style="color:#aaa;text-align:center">${i + 1}</td>
       <td>${p.name}</td>
-      <td style="color:#2e7d52;font-weight:700;text-align:right">${fmtPHP(p.value)}</td>
+      <td style="text-align:center;color:#888">${p.units > 0 ? p.units : '—'}</td>
+      <td style="color:#2e7d52;font-weight:700;text-align:right">${fmtPHP(p.revenue)}</td>
     </tr>
   `).join('');
 
@@ -137,10 +139,10 @@ export async function printAnalytics(filteredMonthly, sales, inv, periodLabel = 
       ${topProducts.length > 0 ? `
       <h2>Top Products</h2>
       <table>
-        <thead><tr><th style="text-align:center">#</th><th>Product</th><th style="text-align:right">Revenue</th></tr></thead>
+        <thead><tr><th style="text-align:center">#</th><th>Product</th><th style="text-align:center">Units Sold</th><th style="text-align:right">Revenue</th></tr></thead>
         <tbody>${productRows}</tbody>
       </table>` : ''}
-      <div class="footer">PetKO Business Intelligence · Confidential</div>
+      <div class="footer">PetKO Business Intelligence · Confidential<br/><i>* Unit quantities available for POS transactions only.</i></div>
     </body></html>
   `;
 

@@ -22,4 +22,4 @@
 // DO NOT use 'localhost' or '127.0.0.1' — it will not work on a physical device.
 // ============================================================
 
-export const API_BASE = 'http://192.168.5.172:8000';
+export const API_BASE = 'https://bipetkoweb-mobile-production.up.railway.app';

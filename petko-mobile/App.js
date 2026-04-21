@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, ActivityIndicator, Image } from 'react-native';
+import * as Font from 'expo-font';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
@@ -19,8 +21,6 @@ import { API_BASE } from './src/config';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const TAB_ICONS = {
   Dashboard: 'chart-line',
@@ -101,6 +101,22 @@ function RootNavigator() {
 }
 
 export default function App() {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    Font.loadAsync({
+      ...MaterialCommunityIcons.font,
+    }).then(() => setFontsLoaded(true));
+  }, []);
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFDF7' }}>
+        <ActivityIndicator color="#D4900A" size={36} />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <ThemeProvider>

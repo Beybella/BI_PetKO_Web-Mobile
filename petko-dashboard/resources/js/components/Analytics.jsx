@@ -102,7 +102,9 @@ export default function Analytics() {
   const topProducts = useMemo(() => {
     if (!data) return [];
     if (month === 'all') return data.top_products ?? [];
-    const src = data.monthly.find(m => m.month === month)?.top_products ?? {};
+    const src = data.monthly.find(m => m.month === month)?.top_products ?? [];
+    // handle both array format (new) and object format (old)
+    if (Array.isArray(src)) return src;
     return Object.entries(src).map(([name, value]) => ({ name, revenue: value, units: 0 }));
   }, [data, month]);
 

@@ -230,6 +230,20 @@ export default function Analytics() {
       y += 8;
 
       topProducts.slice(0, 10).forEach((p, i) => {
+        if (y > H - 20) {
+          doc.setDrawColor(...BORDER); doc.line(14, H - 12, W - 14, H - 12);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...MUTED);
+          doc.text('PetKO Business Intelligence  ·  Confidential', 14, H - 7);
+          doc.addPage(); y = 14;
+          // redraw top products header on new page
+          doc.setFillColor(...YELLOW); doc.setDrawColor(...BORDER);
+          doc.rect(14, y, W - 28, 8, 'FD');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
+          doc.text('#',       21,     y + 5.5, { align: 'center' });
+          doc.text('Product', W / 2,  y + 5.5, { align: 'center' });
+          doc.text('Revenue', W - 14, y + 5.5, { align: 'right' });
+          y += 8;
+        }
         if (i % 2 === 0) { doc.setFillColor(252, 250, 245); doc.rect(14, y, W - 28, 7, 'F'); }
         doc.setDrawColor(...BORDER); doc.line(14, y + 7, W - 14, y + 7);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MUTED);

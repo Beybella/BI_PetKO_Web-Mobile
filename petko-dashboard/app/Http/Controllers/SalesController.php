@@ -31,7 +31,7 @@ class SalesController extends Controller
     public function summary(): JsonResponse
     {
         $rows = Sale::where('is_expense', false)
-            ->whereRaw("LOWER(item) NOT LIKE '%total sales%'")
+            ->where('item', 'not like', '%total sales%')
             ->get();
 
         $daily         = [];

@@ -243,9 +243,9 @@ export default function Analytics() {
       doc.setFillColor(...YELLOW); doc.setDrawColor(...BORDER);
       doc.rect(14, y, W - 28, 8, 'FD');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
-      doc.text('#',       21,     y + 5.5, { align: 'center' });
-      doc.text('Product', W / 2,  y + 5.5, { align: 'center' });
-      doc.text('Revenue', W - 14, y + 5.5, { align: 'right' });
+      doc.text('#',       18,     y + 5.5, { align: 'left' });
+      doc.text('Product', 28,     y + 5.5, { align: 'left' });
+      doc.text('Revenue', W - 18, y + 5.5, { align: 'right' });
       y += 8;
 
       topProducts.slice(0, 10).forEach((p, i) => {
@@ -258,23 +258,28 @@ export default function Analytics() {
           doc.setFillColor(...YELLOW); doc.setDrawColor(...BORDER);
           doc.rect(14, y, W - 28, 8, 'FD');
           doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
-          doc.text('#',       21,     y + 5.5, { align: 'center' });
-          doc.text('Product', W / 2,  y + 5.5, { align: 'center' });
-          doc.text('Revenue', W - 14, y + 5.5, { align: 'right' });
+          doc.text('#',       18,     y + 5.5, { align: 'left' });
+          doc.text('Product', 28,     y + 5.5, { align: 'left' });
+          doc.text('Revenue', W - 18, y + 5.5, { align: 'right' });
           y += 8;
         }
         if (i % 2 === 0) { doc.setFillColor(252, 250, 245); doc.rect(14, y, W - 28, 7, 'F'); }
         doc.setDrawColor(...BORDER); doc.line(14, y + 7, W - 14, y + 7);
         doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MUTED);
-        doc.text(String(i + 1), 21, y + 5, { align: 'center' });
+        doc.text(String(i + 1), 18, y + 5, { align: 'left' });
         doc.setTextColor(...BROWN);
-        doc.text(p.name.length > 44 ? p.name.slice(0, 44) + '...' : p.name, W / 2, y + 5, { align: 'center' });
+        const maxNameLen = 50;
+        doc.text(p.name.length > maxNameLen ? p.name.slice(0, maxNameLen) + '...' : p.name, 28, y + 5, { align: 'left' });
         doc.setFont('helvetica', 'bold'); doc.setTextColor(...GREEN);
-        doc.text(fmtPDF(p.value), W - 14, y + 5, { align: 'right' });
+        doc.text(fmtPDF(p.value), W - 18, y + 5, { align: 'right' });
         y += 7;
       });
 
       // ── Footer ──
+      y += 4;
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(...MUTED);
+      doc.text('* Revenue figures are based on sales amounts. Unit quantities are available for transactions made through the POS system.', 14, y);
+      y += 8;
       doc.setDrawColor(...BORDER); doc.line(14, H - 12, W - 14, H - 12);
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...MUTED);
       doc.text('PetKO Business Intelligence  ·  Confidential', 14, H - 7);

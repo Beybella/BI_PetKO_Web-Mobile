@@ -181,6 +181,7 @@ export default function DailySummary() {
                                   {tx.items.map((item, i) => (
                                     <tr key={i}>
                                       <td style={{ paddingLeft: 24 }}>{item.item}</td>
+                                      <td style={{ textAlign: 'center', color: 'var(--muted)' }}>x{item.qty ?? 1}</td>
                                       <td style={{ textAlign: 'right', color: 'var(--green)', fontWeight: 600 }}>{fmt(item.amount)}</td>
                                     </tr>
                                   ))}

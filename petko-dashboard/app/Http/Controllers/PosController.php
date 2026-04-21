@@ -42,6 +42,7 @@ class PosController extends Controller
                     'date'           => $date,
                     'item'           => $item['name'],
                     'amount'         => $lineTotal,
+                    'qty'            => (int) $item['qty'],
                     'is_expense'     => false,
                     'transaction_id' => $txId,
                 ]);

@@ -39,6 +39,7 @@ class TransactionsController extends Controller
             }
             $grouped[$txId]['items'][] = [
                 'item'   => $row->item,
+                'qty'    => (int) ($row->qty ?? 1),
                 'amount' => (float) $row->amount,
             ];
             $grouped[$txId]['total'] += (float) $row->amount;
@@ -70,6 +71,7 @@ class TransactionsController extends Controller
             }
             $grouped[$txId]['items'][] = [
                 'item'   => $row->item,
+                'qty'    => (int) ($row->qty ?? 1),
                 'amount' => (float) $row->amount,
             ];
             $grouped[$txId]['total'] += (float) $row->amount;

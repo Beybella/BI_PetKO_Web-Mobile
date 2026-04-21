@@ -41,6 +41,7 @@ class SalesController extends Controller
         $productUnits  = [];
         $monthlyCats   = [];
         $monthlyProds  = [];
+        $monthlyUnits  = [];
 
         foreach ($rows as $s) {
             $date   = $s->date->format('Y-m-d');
@@ -58,7 +59,8 @@ class SalesController extends Controller
 
             $productTotals[$s->item] = ($productTotals[$s->item] ?? 0) + $amount;
             $productUnits[$s->item]  = ($productUnits[$s->item]  ?? 0) + (int) ($s->qty ?? 0);
-            $monthlyProds[$month][$s->item] = ($monthlyProds[$month][$s->item] ?? 0) + $amount;
+            $monthlyProds[$month][$s->item]  = ($monthlyProds[$month][$s->item]  ?? 0) + $amount;
+            $monthlyUnits[$month][$s->item]  = ($monthlyUnits[$month][$s->item]  ?? 0) + (int) ($s->qty ?? 0);
         }
 
         // Expenses per month
@@ -79,6 +81,7 @@ class SalesController extends Controller
             $mp  = $monthlyProds[$m] ?? [];
             arsort($mp);
             $mp = array_slice($mp, 0, 10, true);
+            $mu = $monthlyUnits[$m] ?? [];
 
             $monthlyOut[] = [
                 'month'        => $m,
@@ -87,7 +90,11 @@ class SalesController extends Controller
                 'net'          => round($rev - $exp, 2),
                 'transactions' => $v['transactions'] ?? 0,
                 'categories'   => $monthlyCats[$m] ?? [],
-                'top_products' => $mp,
+                'top_products' => array_map(
+                    fn($name, $revenue) => ['name' => $name, 'revenue' => $revenue, 'units' => $mu[$name] ?? 0],
+                    array_keys($mp),
+                    array_values($mp)
+                ),
             ];
         }
 

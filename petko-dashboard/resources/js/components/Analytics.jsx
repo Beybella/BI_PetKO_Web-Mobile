@@ -101,8 +101,9 @@ export default function Analytics() {
 
   const topProducts = useMemo(() => {
     if (!data) return [];
-    const src = month === 'all' ? data.top_products : (data.monthly.find(m => m.month === month)?.top_products ?? {});
-    return Object.entries(src).map(([name, value]) => ({ name, value }));
+    if (month === 'all') return data.top_products ?? [];
+    const src = data.monthly.find(m => m.month === month)?.top_products ?? {};
+    return Object.entries(src).map(([name, value]) => ({ name, revenue: value, units: 0 }));
   }, [data, month]);
 
   const dowData = useMemo(() => {
@@ -243,9 +244,10 @@ export default function Analytics() {
       doc.setFillColor(...YELLOW); doc.setDrawColor(...BORDER);
       doc.rect(14, y, W - 28, 8, 'FD');
       doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
-      doc.text('#',       18,     y + 5.5, { align: 'left' });
-      doc.text('Product', 28,     y + 5.5, { align: 'left' });
-      doc.text('Revenue', W - 18, y + 5.5, { align: 'right' });
+      doc.text('#',            18,     y + 5.5, { align: 'left' });
+      doc.text('Product',      28,     y + 5.5, { align: 'left' });
+      doc.text('Units Sold',   W - 50, y + 5.5, { align: 'right' });
+      doc.text('Revenue',      W - 18, y + 5.5, { align: 'right' });
       y += 8;
 
       topProducts.slice(0, 10).forEach((p, i) => {
@@ -254,13 +256,13 @@ export default function Analytics() {
           doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...MUTED);
           doc.text('PetKO Business Intelligence  ·  Confidential', 14, H - 7);
           doc.addPage(); y = 14;
-          // redraw top products header on new page
           doc.setFillColor(...YELLOW); doc.setDrawColor(...BORDER);
           doc.rect(14, y, W - 28, 8, 'FD');
           doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...BROWN);
-          doc.text('#',       18,     y + 5.5, { align: 'left' });
-          doc.text('Product', 28,     y + 5.5, { align: 'left' });
-          doc.text('Revenue', W - 18, y + 5.5, { align: 'right' });
+          doc.text('#',            18,     y + 5.5, { align: 'left' });
+          doc.text('Product',      28,     y + 5.5, { align: 'left' });
+          doc.text('Units Sold',   W - 50, y + 5.5, { align: 'right' });
+          doc.text('Revenue',      W - 18, y + 5.5, { align: 'right' });
           y += 8;
         }
         if (i % 2 === 0) { doc.setFillColor(252, 250, 245); doc.rect(14, y, W - 28, 7, 'F'); }
@@ -268,10 +270,12 @@ export default function Analytics() {
         doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MUTED);
         doc.text(String(i + 1), 18, y + 5, { align: 'left' });
         doc.setTextColor(...BROWN);
-        const maxNameLen = 50;
+        const maxNameLen = 45;
         doc.text(p.name.length > maxNameLen ? p.name.slice(0, maxNameLen) + '...' : p.name, 28, y + 5, { align: 'left' });
+        doc.setTextColor(...MUTED);
+        doc.text(p.units > 0 ? String(p.units) : '—', W - 50, y + 5, { align: 'right' });
         doc.setFont('helvetica', 'bold'); doc.setTextColor(...GREEN);
-        doc.text(fmtPDF(p.value), W - 18, y + 5, { align: 'right' });
+        doc.text(fmtPDF(p.revenue), W - 18, y + 5, { align: 'right' });
         y += 7;
       });
 
@@ -507,7 +511,7 @@ export default function Analytics() {
         <KpiCard
           icon={<IconTrophy size={24} />} label="Top Product"
           value={topProductName}
-          sub={topProducts[0] ? fmt(topProducts[0].value) + ' revenue' : '—'}
+          sub={topProducts[0] ? fmt(topProducts[0].revenue) + ' revenue' : '—'}
           color="blue" smallValue />
       </div>
 
@@ -589,8 +593,8 @@ export default function Analytics() {
           </div>
           <div style={{ marginTop: 8 }}>
             {topProducts.slice(0, 8).map((p, i) => {
-              const max = topProducts[0]?.value || 1;
-              const barPct = (p.value / max * 100).toFixed(0);
+              const max = topProducts[0]?.revenue || 1;
+              const barPct = (p.revenue / max * 100).toFixed(0);
               return (
                 <div key={i} className="top-product-row">
                   <span className="top-product-rank">{i + 1}</span>
@@ -600,7 +604,7 @@ export default function Analytics() {
                       <div className="top-product-bar" style={{ width: `${barPct}%`, background: COLORS[i % COLORS.length] }} />
                     </div>
                   </div>
-                  <span className="top-product-value">{fmt(p.value)}</span>
+                  <span className="top-product-value">{fmt(p.revenue)}</span>
                 </div>
               );
             })}

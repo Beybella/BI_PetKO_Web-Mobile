@@ -38,6 +38,7 @@ class SalesController extends Controller
         $monthly       = [];
         $catTotals     = array_fill_keys(array_keys($this->categories), 0);
         $productTotals = [];
+        $productUnits  = [];
         $monthlyCats   = [];
         $monthlyProds  = [];
 
@@ -56,6 +57,7 @@ class SalesController extends Controller
             $monthlyCats[$month][$cat] = ($monthlyCats[$month][$cat] ?? 0) + $amount;
 
             $productTotals[$s->item] = ($productTotals[$s->item] ?? 0) + $amount;
+            $productUnits[$s->item]  = ($productUnits[$s->item]  ?? 0) + (int) ($s->qty ?? 0);
             $monthlyProds[$month][$s->item] = ($monthlyProds[$month][$s->item] ?? 0) + $amount;
         }
 
@@ -93,7 +95,11 @@ class SalesController extends Controller
             'daily'        => $daily,
             'monthly'      => $monthlyOut,
             'categories'   => $catTotals,
-            'top_products' => array_slice($productTotals, 0, 10, true),
+            'top_products' => array_map(
+                fn($name, $revenue) => ['name' => $name, 'revenue' => $revenue, 'units' => $productUnits[$name] ?? 0],
+                array_keys(array_slice($productTotals, 0, 10, true)),
+                array_values(array_slice($productTotals, 0, 10, true))
+            ),
         ]);
     }
 }

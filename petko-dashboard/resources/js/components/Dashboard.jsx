@@ -7,14 +7,16 @@ import Inventory from './Inventory';
 import POS from './POS';
 import DailySummary from './DailySummary';
 import UserManagement from './UserManagement';
+import Transactions from './Transactions';
 
 const ALL_TABS = [
-  { key: 'dashboard',   label: 'Analytics',   icon: <TrendUp style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
-  { key: 'pos',         label: 'POS',          icon: <IconCart style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
-  { key: 'inventory',   label: 'Inventory',    icon: <IconBox style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
-  { key: 'lowstock',    label: 'Low Stock',    icon: <IconAlert style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin','staff'] },
-  { key: 'daily',       label: 'Daily',        icon: <IconCalendar style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
-  { key: 'users',       label: 'Users',        icon: <IconUser style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
+  { key: 'dashboard',    label: 'Analytics',     icon: <TrendUp style={{verticalAlign:'middle',marginRight:4}} />,    roles: ['admin'] },
+  { key: 'pos',          label: 'POS',            icon: <IconCart style={{verticalAlign:'middle',marginRight:4}} />,   roles: ['admin','staff'] },
+  { key: 'inventory',    label: 'Inventory',      icon: <IconBox style={{verticalAlign:'middle',marginRight:4}} />,    roles: ['admin','staff'] },
+  { key: 'lowstock',     label: 'Low Stock',      icon: <IconAlert style={{verticalAlign:'middle',marginRight:4}} />,  roles: ['admin','staff'] },
+  { key: 'daily',        label: 'Daily',          icon: <IconCalendar style={{verticalAlign:'middle',marginRight:4}} />, roles: ['admin'] },
+  { key: 'transactions', label: 'Transactions',   icon: <IconCart style={{verticalAlign:'middle',marginRight:4}} />,   roles: ['admin'] },
+  { key: 'users',        label: 'Users',          icon: <IconUser style={{verticalAlign:'middle',marginRight:4}} />,   roles: ['admin'] },
 ];
 
 function useClock() {
@@ -141,12 +143,13 @@ export default function Dashboard() {
         </header>
 
         <div className="page-content">
-          {tab === 'dashboard' && <Analytics />}
-          {tab === 'pos'       && <POS />}
-          {tab === 'inventory' && <Inventory />}
-          {tab === 'lowstock'  && <LowStock />}
-          {tab === 'daily'     && <DailySummary />}
-          {tab === 'users'     && <UserManagement />}
+          {tab === 'dashboard'    && <Analytics />}
+          {tab === 'pos'          && <POS />}
+          {tab === 'inventory'    && <Inventory />}
+          {tab === 'lowstock'     && <LowStock />}
+          {tab === 'daily'        && <DailySummary />}
+          {tab === 'transactions' && <Transactions />}
+          {tab === 'users'        && <UserManagement />}
         </div>
       </div>
     </div>

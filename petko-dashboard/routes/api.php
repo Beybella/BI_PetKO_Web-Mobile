@@ -7,6 +7,8 @@ use App\Http\Controllers\SalesController;
 use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\PosController;
 
+use App\Http\Controllers\TransactionsController;
+
 // ── Public ────────────────────────────────────────────────────────────────────
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -31,10 +33,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Sales & expenses — admin only
     Route::middleware('role:admin')->group(function () {
-        Route::get('/sales',         [SalesController::class, 'index']);
-        Route::get('/sales/summary', [SalesController::class, 'summary']);
-        Route::get('/sales/today',   [ExpensesController::class, 'today']);
-        Route::post('/expenses',     [ExpensesController::class, 'store']);
+        Route::get('/sales',              [SalesController::class, 'index']);
+        Route::get('/sales/summary',      [SalesController::class, 'summary']);
+        Route::get('/sales/today',        [ExpensesController::class, 'today']);
+        Route::post('/expenses',          [ExpensesController::class, 'store']);
+        Route::get('/transactions',       [TransactionsController::class, 'index']);
+        Route::get('/transactions/today', [TransactionsController::class, 'today']);
     });
 
     // User management — admin only

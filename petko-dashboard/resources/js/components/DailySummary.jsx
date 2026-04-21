@@ -9,20 +9,27 @@ const EXPENSE_CATEGORIES = [
 ];
 
 export default function DailySummary() {
-  const [summary, setSummary]     = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [desc, setDesc]           = useState('');
-  const [amount, setAmount]       = useState('');
-  const [expCat, setExpCat]       = useState('Miscellaneous');
-  const [saving, setSaving]       = useState(false);
-  const [msg, setMsg]             = useState('');
-  const [error, setError]         = useState('');
+  const [summary, setSummary]         = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [transactions, setTransactions] = useState([]);
+  const [expanded, setExpanded]       = useState(null);
+  const [desc, setDesc]               = useState('');
+  const [amount, setAmount]           = useState('');
+  const [expCat, setExpCat]           = useState('Miscellaneous');
+  const [saving, setSaving]           = useState(false);
+  const [msg, setMsg]                 = useState('');
+  const [error, setError]             = useState('');
 
   const load = () => {
     setLoading(true);
-    fetch('/api/sales/today')
-      .then(r => r.json())
-      .then(d => { setSummary(d); setLoading(false); });
+    Promise.all([
+      fetch('/api/sales/today').then(r => r.json()),
+      fetch('/api/transactions/today').then(r => r.json()),
+    ]).then(([s, t]) => {
+      setSummary(s);
+      setTransactions(t);
+      setLoading(false);
+    });
   };
 
   useEffect(() => { load(); }, []);
@@ -135,6 +142,59 @@ export default function DailySummary() {
                 )
               }
             </div>
+          </div>
+      {/* ── Recent Transactions ── */}
+          <div className="card" style={{ marginTop: 20 }}>
+            <div className="chart-card-header" style={{ marginBottom: 12 }}>
+              <div className="chart-card-title"><IconCart size={18} style={{marginRight:6}} /> Today's Transactions</div>
+              <span className="chart-total-badge">{transactions.length} transaction{transactions.length !== 1 ? 's' : ''}</span>
+            </div>
+            {transactions.length === 0 ? (
+              <p className="alert-empty">No POS transactions recorded today yet.</p>
+            ) : (
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Transaction ID</th>
+                      <th>Time</th>
+                      <th>Items</th>
+                      <th style={{ textAlign: 'right' }}>Total</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map(tx => (
+                      <React.Fragment key={tx.transaction_id}>
+                        <tr style={{ cursor: 'pointer' }} onClick={() => setExpanded(expanded === tx.transaction_id ? null : tx.transaction_id)}>
+                          <td style={{ fontWeight: 700, color: 'var(--primary)', fontFamily: 'monospace', fontSize: '.82rem' }}>{tx.transaction_id}</td>
+                          <td style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{tx.created_at.slice(11, 16)}</td>
+                          <td style={{ color: 'var(--muted)', fontSize: '.82rem' }}>{tx.items.length} item{tx.items.length !== 1 ? 's' : ''}</td>
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--green)' }}>{fmt(tx.total)}</td>
+                          <td style={{ textAlign: 'right', color: 'var(--muted)', fontSize: '.8rem' }}>{expanded === tx.transaction_id ? '▲' : '▼'}</td>
+                        </tr>
+                        {expanded === tx.transaction_id && (
+                          <tr>
+                            <td colSpan={5} style={{ padding: 0, background: 'var(--bg)' }}>
+                              <table style={{ width: '100%', fontSize: '.82rem' }}>
+                                <tbody>
+                                  {tx.items.map((item, i) => (
+                                    <tr key={i}>
+                                      <td style={{ paddingLeft: 24 }}>{item.item}</td>
+                                      <td style={{ textAlign: 'right', color: 'var(--green)', fontWeight: 600 }}>{fmt(item.amount)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </>
       )}

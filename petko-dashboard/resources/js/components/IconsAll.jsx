@@ -200,3 +200,10 @@ export const IconMoon = ({ size = 24, style }) => (
   </svg>
 );
 
+
+export const IconReceipt = ({ size = 24, style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1V2l-2 1-2-1-2 1-2-1-2 1-2-1Z"/>
+    <path d="M8 8h8M8 12h8M8 16h4"/>
+  </svg>
+);

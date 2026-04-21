@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IconCart, IconCalendar, IconSearch } from './IconsAll';
+import { IconCart, IconCalendar, IconSearch, IconReceipt } from './IconsAll';
 
 const fmt = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
@@ -67,7 +67,7 @@ export default function Transactions() {
         <div className="loading">Loading transactions...</div>
       ) : transactions.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: 40, color: 'var(--muted)' }}>
-          <div style={{ fontSize: '2rem', marginBottom: 8 }}>🧾</div>
+          <div style={{ fontSize: '2rem', marginBottom: 8 }}><IconReceipt size={40} style={{ color: 'var(--muted)' }} /></div>
           <p>No transactions found.</p>
           <p style={{ fontSize: '.8rem', marginTop: 4 }}>Transactions will appear here once sales are made through the POS.</p>
         </div>

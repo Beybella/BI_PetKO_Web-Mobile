@@ -1,6 +1,7 @@
 PetKO - Setup Guide for Groupmates
 ====================================
-This guide covers how to run both the web dashboard and the mobile app on your own machine.
+This guide covers how to run, edit, and build both the web dashboard
+and the mobile app on your own machine.
 
 
 PREREQUISITES
@@ -31,10 +32,6 @@ STEP 2 - Set Up the Web Dashboard (Laravel + React)
   php artisan migrate
   php artisan db:seed
 
-Place CSV data files in petko-dashboard/storage/app/:
-  - petKO.csv           (sales and expenses data)
-  - inventoryPetKO.csv  (inventory data)
-
 Run the dashboard (open TWO separate terminals inside petko-dashboard):
 
   Terminal 1 - Frontend:
@@ -55,31 +52,88 @@ STEP 3 - Set Up the Mobile App (Expo)
 --------------------------------------
   cd petko-mobile
   npm install
-  npx expo install expo-print expo-sharing expo-file-system
+  npx expo install expo-print expo-sharing expo-file-system expo-font
 
-!! UPDATE THE API ADDRESS (REQUIRED) !!
+The mobile app connects to the backend via config.js.
+You have two options:
 
-Before running the app, you need to point it to your machine's IP address.
+  OPTION A - Use Railway (live server, needs internet):
+    Edit petko-mobile/src/config.js:
+      export const API_BASE = 'https://bipetkoweb-mobile-production.up.railway.app';
+    Then just run: npx expo start
+    No need to run Laravel locally.
 
-Find your IP:
-  Windows  -> open Command Prompt -> run: ipconfig
-              look for "IPv4 Address" under your Wi-Fi adapter
-  Mac/Linux -> open Terminal -> run: ifconfig  or  ip addr
-
-Edit petko-mobile/src/config.js:
-  Change this line:
-    export const API_BASE = 'http://YOUR_IP_HERE:8000';
-
-  Example:
-    export const API_BASE = 'http://192.168.1.25:8000';
-
-  !! Do NOT use localhost or 127.0.0.1 - it will not work on a physical device.
-  !! Your phone and PC must be on the SAME Wi-Fi network.
+  OPTION B - Use local server (same Wi-Fi, no internet needed):
+    Find your IP:
+      Windows -> open Command Prompt -> run: ipconfig
+                 look for "IPv4 Address" under your Wi-Fi adapter
+    Edit petko-mobile/src/config.js:
+      export const API_BASE = 'http://YOUR_IP_HERE:8000';
+    Make sure Laravel is running with --host=0.0.0.0
+    Then run: npx expo start
 
 Run the mobile app:
   npx expo start
 
-Then scan the QR code using the Expo Go app on your phone.
+Scan the QR code using the Expo Go app on your phone.
+
+!! Your phone and PC must be on the SAME Wi-Fi network for Expo Go to work.
+!! Mobile data also works if config.js points to Railway.
+
+
+STEP 4 - Making Changes
+------------------------
+Web dashboard changes (React components):
+  - Edit files in petko-dashboard/resources/js/components/
+  - Changes appear instantly while npm run dev is running
+
+Web dashboard changes (Laravel/PHP):
+  - Edit files in petko-dashboard/app/Http/Controllers/
+  - No restart needed, changes apply immediately
+
+Mobile app changes:
+  - Edit files in petko-mobile/src/screens/ or petko-mobile/src/components/
+  - Changes appear instantly in Expo Go (just save the file)
+
+After making changes, push to GitHub:
+  git add .
+  git commit -m "describe your change"
+  git push
+
+Railway will automatically redeploy the web dashboard after each push.
+
+
+STEP 5 - Building the Android APK
+-----------------------------------
+When you want to distribute the app without Expo Go:
+
+  npm install -g eas-cli
+  eas login
+  cd petko-mobile
+  eas build --platform android --profile preview
+
+This builds in the cloud (free tier, may queue).
+Download the APK from the link provided and install on Android phones.
+
+!! Make sure config.js points to Railway before building the APK.
+!! After building, update config.js back to local IP if needed for development.
+
+
+STEP 6 - Pushing Data to Railway Database
+-------------------------------------------
+If you need to reimport CSV data to the live Railway database:
+
+  1. Edit petko-dashboard/.env temporarily:
+       DB_CONNECTION=mysql
+       DB_HOST=shinkansen.proxy.rlwy.net
+       DB_PORT=36994
+       DB_DATABASE=railway
+       DB_USERNAME=root
+       DB_PASSWORD=yQkRxOaWMGtkhFcuEGkjgVgnOpjpOwxD
+
+  2. Run: php artisan db:seed --class=CsvImportSeeder
+
+  3. Change .env back to: DB_CONNECTION=sqlite
 
 
 COMMON ISSUES
@@ -101,28 +155,43 @@ Database errors on first run
   cd petko-dashboard
   php artisan migrate:fresh --seed
 
+Duplicate import error in App.js
+  Make sure MaterialCommunityIcons is only imported once at the top of App.js
+
 
 PROJECT STRUCTURE (Quick Reference)
 -------------------------------------
   PetKO-Dashboard/
-  |-- petko-dashboard/        <- Laravel + React web dashboard
-  |   |-- app/Http/Controllers/
-  |   |-- resources/js/components/
-  |   |-- storage/app/        <- CSV data files go here
-  |   `-- database/           <- SQLite (users only)
+  |-- petko-dashboard/              <- Laravel + React web dashboard
+  |   |-- app/Http/Controllers/     <- API logic (PHP)
+  |   |-- resources/js/components/  <- UI components (React/JSX)
+  |   |-- resources/js/app.css      <- All styles
+  |   |-- storage/app/              <- CSV data files (local only)
+  |   `-- database/                 <- Migrations and seeders
   |
-  `-- petko-mobile/           <- Expo React Native mobile app
+  `-- petko-mobile/                 <- Expo React Native mobile app
+      |-- App.js                    <- Entry point, navigation
       `-- src/
-          |-- config.js       <- !! Update API_BASE here
-          |-- screens/
-          |-- components/
-          `-- utils/printPDF.js
+          |-- config.js             <- !! Update API_BASE here
+          |-- screens/              <- App screens
+          |-- components/           <- Shared UI components
+          `-- utils/printPDF.js     <- PDF export logic
+
+
+LIVE URLS
+----------
+  Web Dashboard:  https://bipetkoweb-mobile-production.up.railway.app
+  Admin login:    admin@petko.com / petko2026
+  Staff login:    staff@petko.com / staff2026
 
 
 NOTES
 -----
 - The web dashboard and mobile app share the same Laravel backend API.
-- Only ONE person needs to run the Laravel server. Everyone else just
-  updates config.js to point to that person's IP address.
+- Only ONE person needs to run the Laravel server locally. Everyone else
+  just updates config.js to point to that person's IP address.
 - Admin: can manage users, view analytics, export reports.
 - Staff: can use POS, view inventory, and view low stock alerts.
+- All data is stored in Railway's MySQL database.
+- The .env file is for local development only. Railway uses its own
+  environment variables set in the Railway dashboard.

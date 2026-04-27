@@ -57,7 +57,6 @@ export default function LoginScreen() {
           }
         </TouchableOpacity>
 
-        <Text style={s.hint}>admin@petko.com · staff@petko.com</Text>
       </View>
     </KeyboardAvoidingView>
   );

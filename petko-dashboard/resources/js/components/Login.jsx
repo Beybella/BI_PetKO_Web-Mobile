@@ -60,9 +60,6 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="login-hint">
-          Admin: admin@petko.com · staff@petko.com
-        </p>
       </div>
     </div>
   );

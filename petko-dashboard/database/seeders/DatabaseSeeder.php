@@ -29,5 +29,8 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('staff2026'),
             ]
         );
+
+        // Import CSV data into database
+        $this->call(CsvImportSeeder::class);
     }
 }

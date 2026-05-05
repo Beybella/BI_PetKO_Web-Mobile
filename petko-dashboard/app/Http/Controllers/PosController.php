@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Inventory;
+use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class PosController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'items'          => 'required|array|min:1',
-            'items.*.name'   => 'required|string',
-            'items.*.qty'    => 'required|integer|min:1',
-            'items.*.price'  => 'required|numeric|min:0',
-            'cash_tendered'  => 'required|numeric|min:0',
+            'items'         => 'required|array|min:1',
+            'items.*.name'  => 'required|string',
+            'items.*.qty'   => 'required|integer|min:1',
+            'items.*.price' => 'required|numeric|min:0',
+            'cash_tendered' => 'required|numeric|min:0',
         ]);
 
         $items = $request->input('items');
@@ -28,43 +31,26 @@ class PosController extends Controller
         }
 
         $change = $cash - $total;
-        $date   = now()->format('Y-m-d');
+        $date   = now()->toDateString();
         $txId   = 'TXN-' . now()->format('YmdHis');
 
-        // Append each sold item as a new line in petKO.csv
-        $csvPath = storage_path('app/petKO.csv');
-        $fp = fopen($csvPath, 'a');
-        foreach ($items as $item) {
-            $lineTotal = round($item['qty'] * $item['price'], 2);
-            fputcsv($fp, [$date, $item['name'], $lineTotal]);
-        }
-        fclose($fp);
+        DB::transaction(function () use ($items, $date, $txId) {
+            foreach ($items as $item) {
+                $lineTotal = round($item['qty'] * $item['price'], 2);
 
-        // Update inventory stock levels
-        $invPath  = storage_path('app/inventoryPetKO.csv');
-        $rows     = array_map('str_getcsv', file($invPath));
-        $headers  = $rows[0];
-        $nameIdx  = array_search('Item_Name',   $headers);
-        $stockIdx = array_search('Stock_Level', $headers);
+                Sale::create([
+                    'date'           => $date,
+                    'item'           => $item['name'],
+                    'amount'         => $lineTotal,
+                    'is_expense'     => false,
+                    'transaction_id' => $txId,
+                ]);
 
-        $nameMap = [];
-        for ($i = 1; $i < count($rows); $i++) {
-            if (isset($rows[$i][$nameIdx])) {
-                $nameMap[strtolower(trim($rows[$i][$nameIdx]))] = $i;
+                // Deduct stock
+                Inventory::where('name', $item['name'])
+                    ->decrement('stock', $item['qty']);
             }
-        }
-
-        foreach ($items as $item) {
-            $key = strtolower(trim($item['name']));
-            if (isset($nameMap[$key])) {
-                $idx = $nameMap[$key];
-                $rows[$idx][$stockIdx] = max(0, (int)$rows[$idx][$stockIdx] - (int)$item['qty']);
-            }
-        }
-
-        $fp = fopen($invPath, 'w');
-        foreach ($rows as $row) { fputcsv($fp, $row); }
-        fclose($fp);
+        });
 
         return response()->json([
             'success'        => true,

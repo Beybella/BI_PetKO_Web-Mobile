@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Sale;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class SalesController extends Controller
 {
@@ -15,98 +17,53 @@ class SalesController extends Controller
         'Treats/Snacks' => ['toci','yum yum','tuna steak','sausage','bones','biscuit','chew snack','dentastix','dental','jerky','goats milk','puppy milk','african','infinity','mondee'],
     ];
 
-    private array $expenseKeywords = [
-        'expense','fee','wifi','water','powder','lalamove','parcel',
-        'payment','loan','ballpen','pavement','lipstick','bearing soap',
-        'phonex','return','deep (','danny (','prince (','lucy (','armour',
-        'pina','enertone','cologne','puppy love','respet care',
-    ];
-
-    private function loadSales(): array
+    private function categorise(string $label): string
     {
-        $path = storage_path('app/petKO.csv');
-        $rows = array_map('str_getcsv', file($path));
-        $headers = array_shift($rows);
-
-        $sales = [];
-        foreach ($rows as $row) {
-            if (count($row) < 3) continue;
-            $item   = array_combine($headers, $row);
-            $amount = (float) $item['Amount'];
-            $label  = strtolower($item['Item']);
-
-            $isExpense = false;
-            foreach ($this->expenseKeywords as $kw) {
-                if (str_contains($label, $kw)) { $isExpense = true; break; }
+        $label = strtolower($label);
+        foreach ($this->categories as $cat => $keywords) {
+            foreach ($keywords as $kw) {
+                if (str_contains($label, $kw)) return $cat;
             }
-
-            $sales[] = [
-                'date'       => $item['Date'],
-                'item'       => $item['Item'],
-                'amount'     => $amount,
-                'is_expense' => $isExpense,
-            ];
         }
-        return $sales;
-    }
-
-    public function index(): JsonResponse
-    {
-        return response()->json($this->loadSales());
+        return 'Treats/Snacks';
     }
 
     public function summary(): JsonResponse
     {
-        $sales = $this->loadSales();
+        $rows = Sale::where('is_expense', false)
+            ->whereRaw("LOWER(item) NOT LIKE '%total sales%'")
+            ->get();
 
         $daily         = [];
         $monthly       = [];
         $catTotals     = array_fill_keys(array_keys($this->categories), 0);
         $productTotals = [];
+        $monthlyCats   = [];
+        $monthlyProds  = [];
 
-        // Per-month breakdowns
-        $monthlyCats     = [];
-        $monthlyProducts = [];
-
-        foreach ($sales as $s) {
-            if ($s['is_expense']) continue;
-            if (str_contains(strtolower($s['item']), 'total sales')) continue;
-
-            $date   = $s['date'];
-            $month  = substr($date, 0, 7);
-            $amount = $s['amount'];
-            $label  = strtolower($s['item']);
+        foreach ($rows as $s) {
+            $date   = $s->date->format('Y-m-d');
+            $month  = $s->date->format('Y-m');
+            $amount = (float) $s->amount;
+            $cat    = $this->categorise($s->item);
 
             $daily[$date] = ($daily[$date] ?? 0) + $amount;
+
             $monthly[$month]['revenue']      = ($monthly[$month]['revenue']      ?? 0) + $amount;
             $monthly[$month]['transactions'] = ($monthly[$month]['transactions'] ?? 0) + 1;
 
-            // categorise
-            $matched = false;
-            foreach ($this->categories as $cat => $keywords) {
-                foreach ($keywords as $kw) {
-                    if (str_contains($label, $kw)) {
-                        $catTotals[$cat] += $amount;
-                        $monthlyCats[$month][$cat] = ($monthlyCats[$month][$cat] ?? 0) + $amount;
-                        $matched = true;
-                        break 2;
-                    }
-                }
-            }
-            if (!$matched) {
-                $catTotals['Treats/Snacks'] += $amount;
-                $monthlyCats[$month]['Treats/Snacks'] = ($monthlyCats[$month]['Treats/Snacks'] ?? 0) + $amount;
-            }
+            $catTotals[$cat] += $amount;
+            $monthlyCats[$month][$cat] = ($monthlyCats[$month][$cat] ?? 0) + $amount;
 
-            $productTotals[$s['item']] = ($productTotals[$s['item']] ?? 0) + $amount;
-            $monthlyProducts[$month][$s['item']] = ($monthlyProducts[$month][$s['item']] ?? 0) + $amount;
+            $productTotals[$s->item] = ($productTotals[$s->item] ?? 0) + $amount;
+            $monthlyProds[$month][$s->item] = ($monthlyProds[$month][$s->item] ?? 0) + $amount;
         }
 
         // Expenses per month
-        foreach ($sales as $s) {
-            if (!$s['is_expense']) continue;
-            $month = substr($s['date'], 0, 7);
-            $monthly[$month]['expenses'] = ($monthly[$month]['expenses'] ?? 0) + abs($s['amount']);
+        $expenses = Sale::where('is_expense', true)->get();
+        foreach ($expenses as $s) {
+            $month = $s->date->format('Y-m');
+            $monthly[$month]['expenses'] = ($monthly[$month]['expenses'] ?? 0) + abs((float) $s->amount);
         }
 
         ksort($daily);
@@ -117,9 +74,7 @@ class SalesController extends Controller
         foreach ($monthly as $m => $v) {
             $rev = $v['revenue']  ?? 0;
             $exp = $v['expenses'] ?? 0;
-
-            // top 10 products for this month
-            $mp = $monthlyProducts[$m] ?? [];
+            $mp  = $monthlyProds[$m] ?? [];
             arsort($mp);
             $mp = array_slice($mp, 0, 10, true);
 

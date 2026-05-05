@@ -1,0 +1,128 @@
+PetKO - Setup Guide for Groupmates
+====================================
+This guide covers how to run both the web dashboard and the mobile app on your own machine.
+
+
+PREREQUISITES
+-------------
+Make sure you have these installed before starting:
+
+  PHP 8.2+          https://www.php.net/downloads
+  Composer          https://getcomposer.org
+  Node.js (v18+)    https://nodejs.org
+  Git               https://git-scm.com
+  Expo Go (phone)   App Store / Play Store
+
+
+STEP 1 - Clone the Repository
+------------------------------
+  git clone <your-repo-url>
+  cd PetKO-Dashboard
+
+
+STEP 2 - Set Up the Web Dashboard (Laravel + React)
+----------------------------------------------------
+  cd petko-dashboard
+
+  composer install
+  npm install
+  cp .env.example .env
+  php artisan key:generate
+  php artisan migrate
+  php artisan db:seed
+
+Place CSV data files in petko-dashboard/storage/app/:
+  - petKO.csv           (sales and expenses data)
+  - inventoryPetKO.csv  (inventory data)
+
+Run the dashboard (open TWO separate terminals inside petko-dashboard):
+
+  Terminal 1 - Frontend:
+    npm run dev
+
+  Terminal 2 - Backend:
+    php artisan serve --host=0.0.0.0 --port=8000
+    (use --host=0.0.0.0 so the mobile app can reach it)
+
+Open your browser at: http://127.0.0.1:8000
+
+Default login accounts:
+  Admin  |  admin@petko.com  |  petko2026
+  Staff  |  staff@petko.com  |  staff2026
+
+
+STEP 3 - Set Up the Mobile App (Expo)
+--------------------------------------
+  cd petko-mobile
+  npm install
+  npx expo install expo-print expo-sharing expo-file-system
+
+!! UPDATE THE API ADDRESS (REQUIRED) !!
+
+Before running the app, you need to point it to your machine's IP address.
+
+Find your IP:
+  Windows  -> open Command Prompt -> run: ipconfig
+              look for "IPv4 Address" under your Wi-Fi adapter
+  Mac/Linux -> open Terminal -> run: ifconfig  or  ip addr
+
+Edit petko-mobile/src/config.js:
+  Change this line:
+    export const API_BASE = 'http://YOUR_IP_HERE:8000';
+
+  Example:
+    export const API_BASE = 'http://192.168.1.25:8000';
+
+  !! Do NOT use localhost or 127.0.0.1 - it will not work on a physical device.
+  !! Your phone and PC must be on the SAME Wi-Fi network.
+
+Run the mobile app:
+  npx expo start
+
+Then scan the QR code using the Expo Go app on your phone.
+
+
+COMMON ISSUES
+-------------
+"Network request failed" on login
+  - Make sure Laravel is running with --host=0.0.0.0
+  - Double-check the IP in config.js matches your machine's actual IPv4
+  - Make sure your phone and PC are on the same Wi-Fi
+
+"expo-asset cannot be found"
+  cd petko-mobile
+  npm install expo-asset
+
+Blank screen or app crashes on start
+  cd petko-mobile
+  npx expo start --clear
+
+Database errors on first run
+  cd petko-dashboard
+  php artisan migrate:fresh --seed
+
+
+PROJECT STRUCTURE (Quick Reference)
+-------------------------------------
+  PetKO-Dashboard/
+  |-- petko-dashboard/        <- Laravel + React web dashboard
+  |   |-- app/Http/Controllers/
+  |   |-- resources/js/components/
+  |   |-- storage/app/        <- CSV data files go here
+  |   `-- database/           <- SQLite (users only)
+  |
+  `-- petko-mobile/           <- Expo React Native mobile app
+      `-- src/
+          |-- config.js       <- !! Update API_BASE here
+          |-- screens/
+          |-- components/
+          `-- utils/printPDF.js
+
+
+NOTES
+-----
+- The web dashboard and mobile app share the same Laravel backend API.
+- Only ONE person needs to run the Laravel server. Everyone else just
+  updates config.js to point to that person's IP address.
+- Admin: can manage users, view analytics, export reports.
+- Staff: can use POS, view inventory, and view low stock alerts.
